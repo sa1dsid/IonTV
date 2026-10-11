@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- IONTV · строки интерфейса (EN). Бренды не переводятся: IONTV, IO Aura, Data Share. -->
+<resources>
+    <string name="app_name" translatable="false">IONTV</string>
+
+    <!-- Вордмарк I(планета)NTV: буква O — картинка планеты. -->
+    <string name="brand_i" translatable="false">I</string>
+    <string name="brand_ntv" translatable="false">NTV</string>
+</resources>
