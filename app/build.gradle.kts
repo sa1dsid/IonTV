@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.roborazzi)
 }
 
 android {
@@ -56,6 +57,18 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
+    }
+}
+
+// Эталонные скриншоты превью лежат в репозитории: запись — recordRoborazziDebug,
+// сверка — verifyRoborazziDebug.
+roborazzi {
+    outputDir.set(file("src/test/screenshots"))
 }
 
 dependencies {
@@ -71,11 +84,22 @@ dependencies {
     implementation(libs.androidx.compose.material3)
 
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.zxing.core)
 
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.roborazzi.compose.preview.scanner.support)
+    testImplementation(libs.composable.preview.scanner)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
