@@ -22,6 +22,11 @@ fun localProperty(name: String): String? =
 // (IONTV_API_BASE_URL), когда появится домен.
 val DEFAULT_API_BASE_URL = "https://2.28.124.251:8443/"
 
+// Веб-клиент Google проекта io-aura: аккаунт у TV и IO Aura общий. Для пакета
+// com.ionica.iontv в том же проекте нужен Android-клиент с SHA-1 ключа подписи.
+val DEFAULT_GOOGLE_CLIENT_ID =
+    "222166251474-dijpsd7be0ble2cfhg5e97ku29r16tpd.apps.googleusercontent.com"
+
 android {
     namespace = "com.ionica.iontv"
     compileSdk {
@@ -41,6 +46,12 @@ android {
             "String",
             "API_BASE_URL",
             "\"${localProperty("IONTV_API_BASE_URL") ?: DEFAULT_API_BASE_URL}\"",
+        )
+
+        buildConfigField(
+            "String",
+            "GOOGLE_CLIENT_ID",
+            "\"${localProperty("IONTV_GOOGLE_CLIENT_ID") ?: DEFAULT_GOOGLE_CLIENT_ID}\"",
         )
     }
 
@@ -114,6 +125,11 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.google.id)
+    implementation(libs.play.services.base)
 
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)

@@ -1,8 +1,13 @@
 package com.ionica.iontv.feature.signin.presentation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ionica.iontv.core.auth.GoogleSignIn
+import com.ionica.iontv.feature.signin.data.AccountLinkRepository
 import com.ionica.iontv.feature.signin.data.PairingRepository
+import com.ionica.iontv.feature.signin.domain.model.LinkException
+import com.ionica.iontv.feature.signin.domain.model.LinkFailure
 import com.ionica.iontv.feature.signin.domain.model.PairingCode
 import com.ionica.iontv.feature.signin.domain.model.PairingPoll
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,9 +32,11 @@ private val CODE_RETRY_DELAY = 5.seconds
 @HiltViewModel
 class SignInViewModel @Inject constructor(
     private val pairing: PairingRepository,
+    private val accountLink: AccountLinkRepository,
+    private val googleSignIn: GoogleSignIn,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(SignInUiState())
+    private val _uiState = MutableStateFlow(SignInUiState(googleAvailable = googleSignIn.isAvailable()))
     val uiState: StateFlow<SignInUiState> = _uiState.asStateFlow()
 
     private val eventChannel = Channel<SignInEvent>(Channel.BUFFERED)
@@ -43,6 +50,22 @@ class SignInViewModel @Inject constructor(
 
     fun onRefreshClick() {
         if (_uiState.value.pairing == PairingUi.Expired) startPairing()
+    }
+
+    fun onGoogleClick(activityContext: Context) {
+        if (_uiState.value.linking) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(linking = true, error = null) }
+            accountLink.linkWithGoogle { googleSignIn.idToken(activityContext) }
+                .onSuccess {
+                    pairingJob?.cancel()
+                    eventChannel.send(SignInEvent.Linked)
+                }
+                .onFailure { error ->
+                    _uiState.update { it.copy(linking = false, error = error.toSignInError()) }
+                }
+        }
     }
 
     private fun startPairing() {
@@ -74,4 +97,12 @@ class SignInViewModel @Inject constructor(
             if (poll != PairingPoll.Pending) return poll
         }
     }
+}
+
+// Закрытое окно выбора аккаунта по ТЗ — молча обратно на экран, без ошибки.
+private fun Throwable.toSignInError(): SignInError? = when ((this as? LinkException)?.failure) {
+    LinkFailure.GOOGLE_CANCELLED -> null
+    LinkFailure.GOOGLE_UNAVAILABLE -> SignInError.GOOGLE_UNAVAILABLE
+    LinkFailure.SERVER -> SignInError.SERVER
+    LinkFailure.NO_CONNECTION, null -> SignInError.NO_CONNECTION
 }

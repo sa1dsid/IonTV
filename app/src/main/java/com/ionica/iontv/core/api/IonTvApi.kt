@@ -1,6 +1,8 @@
 package com.ionica.iontv.core.api
 
+import com.ionica.iontv.core.api.dto.AccountLoginDto
 import com.ionica.iontv.core.api.dto.DeviceDto
+import com.ionica.iontv.core.api.dto.GoogleLoginDto
 import com.ionica.iontv.core.api.dto.HealthDto
 import com.ionica.iontv.core.api.dto.PairingCodeDto
 import com.ionica.iontv.core.api.dto.PairingPollDto
@@ -31,6 +33,16 @@ interface IonTvApi {
 
     @POST("api/v1/iontv/pairing/poll")
     suspend fun pairingPoll(@Body body: PairingPollRequestDto): PairingPollDto
+
+    @POST("api/v1/iontv/auth/google")
+    suspend fun googleLogin(@Body body: GoogleLoginDto): AccountLoginDto
+
+    /** Привязывает ТВ аккаунтным токеном и выдаёт взамен ограниченную TV-сессию. */
+    @POST("api/v1/iontv/devices/register")
+    suspend fun registerDevice(
+        @Header(AUTHORIZATION) authorization: String,
+        @Body body: DeviceDto,
+    ): SessionTokensDto
 
     /** 204 без тела. Без явного токена отзывает текущую TV-сессию. */
     @POST("api/v1/iontv/auth/logout")

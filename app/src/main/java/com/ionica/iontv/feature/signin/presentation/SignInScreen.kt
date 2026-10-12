@@ -1,5 +1,6 @@
 package com.ionica.iontv.feature.signin.presentation
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -24,10 +25,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -63,6 +66,8 @@ fun SignInRoute(
     viewModel: SignInViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // Credential Manager показывает окно выбора аккаунта поверх активити — нужен её контекст.
+    val activityContext = LocalContext.current
 
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
@@ -75,6 +80,7 @@ fun SignInRoute(
     SignInScreen(
         uiState = uiState,
         onRefreshClick = viewModel::onRefreshClick,
+        onGoogleClick = { viewModel.onGoogleClick(activityContext) },
         onEmailClick = onEmailClick,
         modifier = modifier,
     )
@@ -84,9 +90,10 @@ fun SignInRoute(
 fun SignInScreen(
     uiState: SignInUiState,
     onRefreshClick: () -> Unit,
+    onGoogleClick: () -> Unit,
     onEmailClick: () -> Unit,
     modifier: Modifier = Modifier,
-    emailInteraction: MutableInteractionSource? = null,
+    primaryInteraction: MutableInteractionSource? = null,
 ) {
     val colors = IonTvTheme.colors
     val typography = IonTvTheme.typography
@@ -120,16 +127,53 @@ fun SignInScreen(
                 color = colors.textSecondary,
             )
             Spacer(Modifier.height(25.dp))
+            // Без Google Play services (Fire TV, безымянные боксы) остаётся только почта,
+            // и фокус по умолчанию переходит на неё.
+            val emailIsPrimary = !uiState.googleAvailable
+            if (uiState.googleAvailable) {
+                TvButton(
+                    text = stringResource(R.string.signin_google),
+                    onClick = onGoogleClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(primaryFocus),
+                    interactionSource = primaryInteraction,
+                )
+                Text(
+                    text = stringResource(R.string.signin_or),
+                    style = typography.separator,
+                    color = colors.textTertiary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 15.dp),
+                )
+            }
             TvButton(
                 text = stringResource(R.string.signin_email),
                 onClick = onEmailClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .focusRequester(primaryFocus),
-                interactionSource = emailInteraction,
+                    .then(if (emailIsPrimary) Modifier.focusRequester(primaryFocus) else Modifier),
+                interactionSource = primaryInteraction.takeIf { emailIsPrimary },
             )
+            uiState.error?.let { error ->
+                Spacer(Modifier.height(15.dp))
+                Text(
+                    text = stringResource(error.message()),
+                    style = typography.statusReason,
+                    color = colors.danger,
+                )
+            }
         }
     }
+}
+
+@StringRes
+private fun SignInError.message(): Int = when (this) {
+    SignInError.NO_CONNECTION -> R.string.error_no_connection
+    SignInError.SERVER -> R.string.error_server
+    SignInError.GOOGLE_UNAVAILABLE -> R.string.error_google_unavailable
 }
 
 @Composable
@@ -219,10 +263,11 @@ private fun RefreshButton(onClick: () -> Unit) {
 private fun SignInScreenPreview() {
     IonTvTheme {
         SignInScreen(
-            uiState = SignInUiState(pairing = PairingUi.Ready("7K2M4Q")),
+            uiState = SignInUiState(pairing = PairingUi.Ready("7K2M4Q"), googleAvailable = true),
             onRefreshClick = {},
+            onGoogleClick = {},
             onEmailClick = {},
-            emailInteraction = rememberFocusedInteraction(),
+            primaryInteraction = rememberFocusedInteraction(),
         )
     }
 }
@@ -232,8 +277,9 @@ private fun SignInScreenPreview() {
 private fun SignInScreenExpiredPreview() {
     IonTvTheme {
         SignInScreen(
-            uiState = SignInUiState(pairing = PairingUi.Expired),
+            uiState = SignInUiState(pairing = PairingUi.Expired, googleAvailable = true),
             onRefreshClick = {},
+            onGoogleClick = {},
             onEmailClick = {},
         )
     }
@@ -246,6 +292,24 @@ private fun SignInScreenOfflinePreview() {
         SignInScreen(
             uiState = SignInUiState(pairing = PairingUi.Offline),
             onRefreshClick = {},
+            onGoogleClick = {},
+            onEmailClick = {},
+        )
+    }
+}
+
+@Preview(widthDp = 960, heightDp = 540)
+@Composable
+private fun SignInScreenGoogleFailedPreview() {
+    IonTvTheme {
+        SignInScreen(
+            uiState = SignInUiState(
+                pairing = PairingUi.Ready("7K2M4Q"),
+                googleAvailable = true,
+                error = SignInError.SERVER,
+            ),
+            onRefreshClick = {},
+            onGoogleClick = {},
             onEmailClick = {},
         )
     }
