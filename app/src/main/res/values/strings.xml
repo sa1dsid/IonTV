@@ -20,6 +20,20 @@
     <string name="signin_or">OR</string>
     <string name="signin_email">Sign in with email</string>
 
+    <!-- 2b · Вход по почте: у IONTV вход без пароля, по коду из письма -->
+    <string name="email_title">Sign in with email</string>
+    <string name="email_label">EMAIL</string>
+    <string name="email_placeholder">you@example.com</string>
+    <string name="email_send_code">Send code</string>
+    <string name="email_code_label">CODE</string>
+    <string name="email_code_placeholder">6-digit code from the email</string>
+    <string name="email_sign_in">Sign in</string>
+    <string name="email_resend">Resend code</string>
+    <string name="email_resend_in">Resend in %1$ds</string>
+    <string name="email_error_invalid">Invalid email format</string>
+    <string name="email_error_code">Invalid or expired code · request a new one</string>
+    <string name="email_error_too_soon">Too soon · wait a minute before asking for a new code</string>
+
     <!-- Ошибки входа — строкой на месте; тексты из Auth IO Aura -->
     <string name="error_no_connection">No connection · check your network</string>
     <string name="error_server">Server is not responding · try again later</string>

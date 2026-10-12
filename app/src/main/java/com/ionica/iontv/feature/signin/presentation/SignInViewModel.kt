@@ -103,6 +103,6 @@ class SignInViewModel @Inject constructor(
 private fun Throwable.toSignInError(): SignInError? = when ((this as? LinkException)?.failure) {
     LinkFailure.GOOGLE_CANCELLED -> null
     LinkFailure.GOOGLE_UNAVAILABLE -> SignInError.GOOGLE_UNAVAILABLE
-    LinkFailure.SERVER -> SignInError.SERVER
     LinkFailure.NO_CONNECTION, null -> SignInError.NO_CONNECTION
+    else -> SignInError.SERVER
 }

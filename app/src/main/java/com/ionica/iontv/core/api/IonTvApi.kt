@@ -2,6 +2,9 @@ package com.ionica.iontv.core.api
 
 import com.ionica.iontv.core.api.dto.AccountLoginDto
 import com.ionica.iontv.core.api.dto.DeviceDto
+import com.ionica.iontv.core.api.dto.EmailCodeSentDto
+import com.ionica.iontv.core.api.dto.EmailInputDto
+import com.ionica.iontv.core.api.dto.EmailLoginDto
 import com.ionica.iontv.core.api.dto.GoogleLoginDto
 import com.ionica.iontv.core.api.dto.HealthDto
 import com.ionica.iontv.core.api.dto.PairingCodeDto
@@ -33,6 +36,13 @@ interface IonTvApi {
 
     @POST("api/v1/iontv/pairing/poll")
     suspend fun pairingPoll(@Body body: PairingPollRequestDto): PairingPollDto
+
+    /** Вход без пароля: письмо с шестизначным кодом. Повторно — не раньше чем через минуту. */
+    @POST("api/v1/iontv/auth/email/code")
+    suspend fun emailCode(@Body body: EmailInputDto): EmailCodeSentDto
+
+    @POST("api/v1/iontv/auth/email/login")
+    suspend fun emailLogin(@Body body: EmailLoginDto): AccountLoginDto
 
     @POST("api/v1/iontv/auth/google")
     suspend fun googleLogin(@Body body: GoogleLoginDto): AccountLoginDto

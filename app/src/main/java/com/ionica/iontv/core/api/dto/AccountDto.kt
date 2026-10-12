@@ -16,6 +16,24 @@ data class GoogleLoginDto(
 )
 
 @Serializable
+data class EmailInputDto(
+    @SerialName("email") val email: String,
+)
+
+@Serializable
+data class EmailCodeSentDto(
+    @SerialName("resendAfterSeconds") val resendAfterSeconds: Int = 60,
+)
+
+/** Шестизначный код из письма: одноразовый, живёт десять минут, пять ошибок — и он сгорает. */
+@Serializable
+data class EmailLoginDto(
+    @SerialName("email") val email: String,
+    @SerialName("code") val code: String,
+    @SerialName("clientType") val clientType: String = CLIENT_NATIVE,
+)
+
+@Serializable
 data class AccountLoginDto(
     @SerialName("accessToken") val accessToken: String,
     @SerialName("isNewUser") val isNewUser: Boolean = false,
