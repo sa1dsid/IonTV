@@ -5,6 +5,8 @@ import com.ionica.iontv.core.api.Paths
 import com.ionica.iontv.core.api.TestApiStack
 import com.ionica.iontv.core.common.TimeSource
 import com.ionica.iontv.core.session.SessionTokens
+import com.ionica.iontv.feature.consent.data.CONSENT_VERSION
+import com.ionica.iontv.feature.consent.data.ConsentRepository
 import com.ionica.iontv.feature.splash.domain.ResolveStartDestinationUseCase
 import com.ionica.iontv.feature.splash.domain.StartDestination
 import com.ionica.iontv.feature.splash.presentation.SplashViewModel
@@ -38,12 +40,36 @@ class SplashViewModelTest : ViewModelTestCase() {
     @Test
     fun `a linked tv goes straight to the dashboard`() = screen { stack ->
         stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
+        stack.sessionStore.saveConsent(CONSENT_VERSION)
         stack.server.always(Paths.HEALTH, body = HEALTHY)
 
         val viewModel = splash(stack)
-        advanceUntilIdle()
+        settleIdle("destination") { viewModel.uiState.value.destination != null }
 
         assertEquals(StartDestination.DASHBOARD, viewModel.uiState.value.destination)
+    }
+
+    @Test
+    fun `a linked tv without consent asks for it first`() = screen { stack ->
+        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
+        stack.server.always(Paths.HEALTH, body = HEALTHY)
+
+        val viewModel = splash(stack)
+        settleIdle("destination") { viewModel.uiState.value.destination != null }
+
+        assertEquals(StartDestination.CONSENT, viewModel.uiState.value.destination)
+    }
+
+    @Test
+    fun `consent to an older text does not count`() = screen { stack ->
+        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
+        stack.sessionStore.saveConsent("tv-consent-v0")
+        stack.server.always(Paths.HEALTH, body = HEALTHY)
+
+        val viewModel = splash(stack)
+        settleIdle("destination") { viewModel.uiState.value.destination != null }
+
+        assertEquals(StartDestination.CONSENT, viewModel.uiState.value.destination)
     }
 
     @Test
@@ -89,7 +115,10 @@ class SplashViewModelTest : ViewModelTestCase() {
 
     private fun TestScope.splash(stack: TestApiStack) = SplashViewModel(
         backendHealth = BackendHealth(stack.api),
-        resolveStartDestination = ResolveStartDestinationUseCase(stack.sessionStore),
+        resolveStartDestination = ResolveStartDestinationUseCase(
+            sessionStore = stack.sessionStore,
+            consent = ConsentRepository(stack.api, stack.sessionStore),
+        ),
         timeSource = TimeSource { testScheduler.currentTime },
     )
 }

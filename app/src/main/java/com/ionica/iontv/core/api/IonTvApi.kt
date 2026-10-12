@@ -1,6 +1,8 @@
 package com.ionica.iontv.core.api
 
 import com.ionica.iontv.core.api.dto.AccountLoginDto
+import com.ionica.iontv.core.api.dto.ConsentDto
+import com.ionica.iontv.core.api.dto.ConsentStateDto
 import com.ionica.iontv.core.api.dto.DeviceDto
 import com.ionica.iontv.core.api.dto.EmailCodeSentDto
 import com.ionica.iontv.core.api.dto.EmailInputDto
@@ -17,6 +19,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 /**
  * Бэкенд IONTV. Запросы с TV-сессией подписывает AuthInterceptor; там, где нужен
@@ -53,6 +56,13 @@ interface IonTvApi {
         @Header(AUTHORIZATION) authorization: String,
         @Body body: DeviceDto,
     ): SessionTokensDto
+
+    /** TV-сессия может менять согласие только своего телевизора. */
+    @POST("api/v1/iontv/device/{deviceId}/consent")
+    suspend fun consent(
+        @Path("deviceId") deviceId: String,
+        @Body body: ConsentDto,
+    ): ConsentStateDto
 
     /** 204 без тела. Без явного токена отзывает текущую TV-сессию. */
     @POST("api/v1/iontv/auth/logout")

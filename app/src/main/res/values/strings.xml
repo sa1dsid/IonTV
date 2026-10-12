@@ -34,6 +34,18 @@
     <string name="email_error_code">Invalid or expired code · request a new one</string>
     <string name="email_error_too_soon">Too soon · wait a minute before asking for a new code</string>
 
+    <!-- 3/3b · Согласие на Data Share: юртекст — финал терминального консента IO Aura -->
+    <string name="consent_title">Data Share on this TV</string>
+    <string name="consent_text">I allow IONTV to use part of this device’s internet channel for analytical tests in the interests of the service’s partners. The device acts as an access point for data processing via a secured API: no personal data is collected, traffic is anonymized. I can turn this off or delete the account with all data at any time in IO Aura settings.</string>
+    <string name="consent_agree">Agree &amp; continue</string>
+    <string name="consent_decline">Decline</string>
+    <string name="consent_legal">By continuing you agree to the &lt;b&gt;Terms of Service&lt;/b&gt; and &lt;b&gt;Privacy Policy&lt;/b&gt;.</string>
+    <string name="consent_legal_scan">Scan to read on your phone · %1$s</string>
+    <string name="consent_decline_title">Without Data Share this TV can’t work</string>
+    <string name="consent_decline_text">Sharing is what IONTV does. You can agree anytime — nothing is lost.</string>
+    <string name="consent_go_back">Go back</string>
+    <string name="consent_exit">Exit app</string>
+
     <!-- Ошибки входа — строкой на месте; тексты из Auth IO Aura -->
     <string name="error_no_connection">No connection · check your network</string>
     <string name="error_server">Server is not responding · try again later</string>

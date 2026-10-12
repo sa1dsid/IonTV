@@ -24,7 +24,9 @@ private val BINDING_ID = stringPreferencesKey("binding_id")
 
 private val USERNAME = stringPreferencesKey("username")
 
-private val SESSION_KEYS = listOf(ACCESS_TOKEN, REFRESH_TOKEN, BINDING_ID, USERNAME)
+private val CONSENT_VERSION = stringPreferencesKey("consent_version")
+
+private val SESSION_KEYS = listOf(ACCESS_TOKEN, REFRESH_TOKEN, BINDING_ID, USERNAME, CONSENT_VERSION)
 
 @Singleton
 class SessionStore @Inject constructor(
@@ -63,6 +65,13 @@ class SessionStore @Inject constructor(
         }
         cached = TvSession(tokens.accessToken, tokens.refreshToken, tokens.bindingId, username)
         loaded = true
+    }
+
+    /** Версия текста, на который пользователь согласился; у каждой привязки — своё согласие. */
+    suspend fun consentVersion(): String? = dataStore.data.first()[CONSENT_VERSION]
+
+    suspend fun saveConsent(version: String?) {
+        dataStore.edit { it.putOrRemove(CONSENT_VERSION, version) }
     }
 
     /** Бэкенд меняет refresh-токен при каждом обновлении: старый после этого недействителен. */

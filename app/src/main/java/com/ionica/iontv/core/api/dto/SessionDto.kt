@@ -30,3 +30,19 @@ fun SessionTokensDto.toTokens() = SessionTokens(
     refreshToken = refreshToken,
     bindingId = bindingId,
 )
+
+/**
+ * Согласие на Data Share. [version] — версия показанного текста, [screen] — где дано:
+ * покупатели трафика аудируют цепочку согласий, бэкенд хранит обе.
+ */
+@Serializable
+data class ConsentDto(
+    @SerialName("granted") val granted: Boolean,
+    @SerialName("version") val version: String,
+    @SerialName("screen") val screen: String,
+)
+
+@Serializable
+data class ConsentStateDto(
+    @SerialName("granted") val granted: Boolean,
+)
