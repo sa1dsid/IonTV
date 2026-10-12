@@ -58,7 +58,7 @@ fun SplashScreen(
         if (uiState.offline) {
             Spacer(Modifier.height(22.dp))
             Text(
-                text = stringResource(R.string.splash_no_connection),
+                text = stringResource(R.string.no_connection_retrying),
                 style = IonTvTheme.typography.notice,
                 color = colors.textSecondary,
             )

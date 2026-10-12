@@ -53,6 +53,7 @@ abstract class ViewModelTestCase {
                 // Прогреваем кэш хранилища: дальше ViewModel читает его без настоящего I/O,
                 // и виртуальное время не обгоняет диск.
                 stack.sessionStore.current()
+                stack.sessionStore.deviceId()
                 body(stack)
             } finally {
                 server.shutdown()

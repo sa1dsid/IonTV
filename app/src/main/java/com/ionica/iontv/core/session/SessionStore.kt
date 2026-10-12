@@ -42,6 +42,9 @@ class SessionStore @Inject constructor(
     @Volatile
     private var loaded = false
 
+    @Volatile
+    private var cachedDeviceId: String? = null
+
     suspend fun current(): TvSession? {
         if (!loaded) {
             cached = dataStore.data.first().toSession()
@@ -75,25 +78,29 @@ class SessionStore @Inject constructor(
      * бэкенде может пережить сессию, и с прежним id повторная привязка упёрлась бы в 409.
      */
     suspend fun close() {
+        val deviceId = UUID.randomUUID().toString()
         dataStore.edit { preferences ->
             SESSION_KEYS.forEach { preferences.remove(it) }
-            preferences[DEVICE_ID] = UUID.randomUUID().toString()
+            preferences[DEVICE_ID] = deviceId
         }
         cached = null
         loaded = true
+        cachedDeviceId = deviceId
     }
 
     /** Постоянный UUID телевизора: создаётся при первом запуске и живёт до конца сессии. */
     suspend fun deviceId(): String {
-        dataStore.data.first()[DEVICE_ID]?.let { return it }
+        cachedDeviceId?.let { return it }
 
-        var deviceId = ""
-        dataStore.edit { preferences ->
-            deviceId = preferences[DEVICE_ID] ?: UUID.randomUUID().toString().also {
-                preferences[DEVICE_ID] = it
+        var deviceId = dataStore.data.first()[DEVICE_ID]
+        if (deviceId == null) {
+            dataStore.edit { preferences ->
+                deviceId = preferences[DEVICE_ID] ?: UUID.randomUUID().toString().also {
+                    preferences[DEVICE_ID] = it
+                }
             }
         }
-        return deviceId
+        return checkNotNull(deviceId).also { cachedDeviceId = it }
     }
 }
 

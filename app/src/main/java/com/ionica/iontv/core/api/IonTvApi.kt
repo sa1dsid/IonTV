@@ -1,6 +1,10 @@
 package com.ionica.iontv.core.api
 
+import com.ionica.iontv.core.api.dto.DeviceDto
 import com.ionica.iontv.core.api.dto.HealthDto
+import com.ionica.iontv.core.api.dto.PairingCodeDto
+import com.ionica.iontv.core.api.dto.PairingPollDto
+import com.ionica.iontv.core.api.dto.PairingPollRequestDto
 import com.ionica.iontv.core.api.dto.SessionTokensDto
 import com.ionica.iontv.core.api.dto.TokenInputDto
 import retrofit2.Response
@@ -20,6 +24,13 @@ interface IonTvApi {
 
     @POST("api/v1/iontv/auth/refresh")
     suspend fun refresh(@Body body: TokenInputDto): SessionTokensDto
+
+    /** Пятиминутный код, который вводят в IO Aura (Devices → Add TV) или на сайте Check. */
+    @POST("api/v1/iontv/pairing/code")
+    suspend fun pairingCode(@Body body: DeviceDto): PairingCodeDto
+
+    @POST("api/v1/iontv/pairing/poll")
+    suspend fun pairingPoll(@Body body: PairingPollRequestDto): PairingPollDto
 
     /** 204 без тела. Без явного токена отзывает текущую TV-сессию. */
     @POST("api/v1/iontv/auth/logout")
