@@ -9,6 +9,7 @@ activityCompose = "1.9.3"
 composeBom = "2024.09.00"
 hilt = "2.52"
 androidxHilt = "1.2.0"
+navigation = "2.5.1"
 coroutines = "1.9.0"
 zxing = "3.5.3"
 retrofit = "2.11.0"
@@ -42,6 +43,7 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHilt" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }

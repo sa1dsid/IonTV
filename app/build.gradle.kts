@@ -131,6 +131,7 @@ dependencies {
     implementation(libs.google.id)
     implementation(libs.play.services.base)
 
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
