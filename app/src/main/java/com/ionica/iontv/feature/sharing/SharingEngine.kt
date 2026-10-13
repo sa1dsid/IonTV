@@ -52,7 +52,7 @@ class SharingEngine @Inject constructor(
     private val networkMonitor: NetworkMonitor,
     private val permissions: BackgroundPermissions,
     private val sessionStore: SessionStore,
-) {
+) : SharingMonitor {
 
     private val running = Mutex()
 
@@ -60,7 +60,7 @@ class SharingEngine @Inject constructor(
 
     private val server = MutableStateFlow<ServerView?>(null)
 
-    val state: Flow<SharingState> = combine(networkMonitor.status, batteryOk, server) { network, battery, server ->
+    override val state: Flow<SharingState> = combine(networkMonitor.status, batteryOk, server) { network, battery, server ->
         SharingState(status = resolveStatus(network, battery, server), connection = network.connection)
     }
 
@@ -97,8 +97,7 @@ class SharingEngine @Inject constructor(
         }
     }
 
-    /** Дашборд вернулся на экран: пользователь мог сходить в настройки батареи. */
-    fun recheckBattery() {
+    override fun recheckBattery() {
         batteryOk.value = isBatteryOk()
     }
 

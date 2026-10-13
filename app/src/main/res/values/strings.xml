@@ -54,6 +54,25 @@
     <string name="setup_done">DONE</string>
     <string name="setup_continue">Continue</string>
 
+    <!-- 5a–5c · Дашборд и 3c · отвязка по долгому OK -->
+    <string name="dashboard_linked_to">linked to</string>
+    <string name="dashboard_your_account">your account</string>
+    <string name="dashboard_ethernet" translatable="false">Ethernet</string>
+    <string name="dashboard_wifi" translatable="false">Wi-Fi</string>
+    <string name="dashboard_active">SHARING ACTIVE</string>
+    <string name="dashboard_paused">PAUSED</string>
+    <string name="dashboard_offline">OFFLINE</string>
+    <string name="dashboard_paused_battery">Battery optimization is blocking background sharing</string>
+    <string name="dashboard_open_settings">Open settings</string>
+    <string name="dashboard_footer_active">Stats &amp; settings — in IO Aura on your phone</string>
+    <string name="dashboard_footer_paused">Resumes automatically once allowed</string>
+    <string name="dashboard_footer_offline">Reconnects automatically</string>
+    <string name="dashboard_version" translatable="false">v%1$s</string>
+    <string name="dashboard_unlink_title">Unlink this TV?</string>
+    <string name="dashboard_unlink_text">Sharing stops immediately. The TV returns to the sign-in screen.</string>
+    <string name="dashboard_keep_linked">Keep linked</string>
+    <string name="dashboard_unlink">Unlink</string>
+
     <!-- Уведомление сервиса раздачи: телевизоры его обычно не показывают -->
     <string name="sharing_notification_channel">Data Share</string>
     <string name="sharing_notification_text">Data Share is running</string>

@@ -7,17 +7,24 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
-class SharingController @Inject constructor(
-    @param:ApplicationContext private val context: Context,
-) {
+interface SharingController {
 
     /** Повторный запуск безопасен: сервис не заводит второй цикл heartbeat. */
-    fun start() {
+    fun start()
+
+    fun stop()
+}
+
+@Singleton
+class ServiceSharingController @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+) : SharingController {
+
+    override fun start() {
         ContextCompat.startForegroundService(context, Intent(context, SharingService::class.java))
     }
 
-    fun stop() {
+    override fun stop() {
         context.stopService(Intent(context, SharingService::class.java))
     }
 }
