@@ -20,7 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -33,6 +36,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -56,10 +60,16 @@ import com.ionica.iontv.core.designsystem.theme.IonTvTheme
 import com.ionica.iontv.core.network.Connection
 import com.ionica.iontv.feature.sharing.domain.model.PauseReason
 import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
+import kotlinx.coroutines.delay
 
 // Сколько держать OK, чтобы открылась отвязка: дольше системного long press,
 // чтобы случайное нажатие на пульте не роняло попап.
 private const val LONG_PRESS_MILLIS = 800L
+
+// ТЗ: «после ~1 минуты бездействия экран гаснет» — защита OLED от выгорания.
+internal const val AMBIENT_AFTER_MILLIS = 60_000L
+
+internal const val DASHBOARD_TAG = "dashboard"
 
 private val StatusDotSize = 16.dp
 
@@ -110,11 +120,22 @@ fun DashboardScreen(
     val colors = IonTvTheme.colors
     val rootFocus = remember { FocusRequester() }
     val longPress = remember { LongPressTracker(LONG_PRESS_MILLIS) }
+    var ambient by remember { mutableStateOf(false) }
+    var lastInput by remember { mutableIntStateOf(0) }
 
-    // На ACTIVE и OFFLINE кнопок нет, но пульт должен попадать в экран — иначе не
-    // поймать долгое OK. Фокус держит сам экран.
-    LaunchedEffect(uiState.confirmingUnlink, uiState.status) {
-        if (!uiState.confirmingUnlink && !uiState.status.hasSettingsButton()) rootFocus.requestFocus()
+    // Минута без пульта — экран гаснет до строки статуса. Попап отвязки ждёт ответа
+    // и в ambient не уходит.
+    LaunchedEffect(lastInput, uiState.confirmingUnlink) {
+        if (uiState.confirmingUnlink) return@LaunchedEffect
+        delay(AMBIENT_AFTER_MILLIS)
+        ambient = true
+    }
+
+    // На ACTIVE и OFFLINE кнопок нет, а в ambient их нет нигде, но пульт должен
+    // попадать в экран — иначе не поймать долгое OK и не разбудить дашборд.
+    LaunchedEffect(uiState.confirmingUnlink, uiState.status, ambient) {
+        val buttonOnScreen = !ambient && uiState.status.hasSettingsButton()
+        if (!uiState.confirmingUnlink && !buttonOnScreen) rootFocus.requestFocus()
     }
 
     Box(
@@ -122,6 +143,12 @@ fun DashboardScreen(
             .fillMaxSize()
             .background(colors.background)
             .onPreviewKeyEvent { event ->
+                lastInput++
+                // Любая кнопка будит дашборд, но сама никуда дальше не нажимается.
+                if (ambient) {
+                    if (event.type == KeyEventType.KeyDown) ambient = false
+                    return@onPreviewKeyEvent true
+                }
                 if (uiState.confirmingUnlink) return@onPreviewKeyEvent false
                 val isOk = event.key == Key.DirectionCenter || event.key == Key.Enter || event.key == Key.NumPadEnter
                 if (!isOk) return@onPreviewKeyEvent false
@@ -133,21 +160,26 @@ fun DashboardScreen(
                 }
             }
             .focusRequester(rootFocus)
-            .focusable(),
+            .focusable()
+            .testTag(DASHBOARD_TAG),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .alpha(if (uiState.confirmingUnlink) POPUP_BACKDROP_ALPHA else 1f),
-        ) {
-            DashboardHeader(uiState)
-            StatusBlock(
-                status = uiState.status,
-                onOpenSettingsClick = onOpenSettingsClick,
-                settingsInteraction = settingsInteraction,
-                modifier = Modifier.weight(1f),
-            )
-            DashboardFooter(uiState.status)
+        if (ambient) {
+            AmbientScreen(status = uiState.status)
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(if (uiState.confirmingUnlink) POPUP_BACKDROP_ALPHA else 1f),
+            ) {
+                DashboardHeader(uiState)
+                StatusBlock(
+                    status = uiState.status,
+                    onOpenSettingsClick = onOpenSettingsClick,
+                    settingsInteraction = settingsInteraction,
+                    modifier = Modifier.weight(1f),
+                )
+                DashboardFooter(uiState.status)
+            }
         }
 
         if (uiState.confirmingUnlink) {
