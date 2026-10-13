@@ -3,6 +3,7 @@ package com.ionica.iontv.feature.consent.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ionica.iontv.core.api.apiError
+import com.ionica.iontv.core.system.DeviceSetupStore
 import com.ionica.iontv.feature.consent.data.ConsentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -18,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ConsentViewModel @Inject constructor(
     private val consent: ConsentRepository,
+    private val setupStore: DeviceSetupStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ConsentUiState())
@@ -32,7 +34,9 @@ class ConsentViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(submitting = true, error = null) }
             consent.grant()
-                .onSuccess { eventChannel.send(ConsentEvent.Agreed) }
+                .onSuccess {
+                    eventChannel.send(ConsentEvent.Agreed(setupPending = !setupStore.isSetupCompleted()))
+                }
                 .onFailure { error ->
                     val reason = if (error.apiError() == null) ConsentError.NO_CONNECTION else ConsentError.SERVER
                     _uiState.update { it.copy(submitting = false, error = reason) }

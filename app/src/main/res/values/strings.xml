@@ -46,6 +46,14 @@
     <string name="consent_go_back">Go back</string>
     <string name="consent_exit">Exit app</string>
 
+    <!-- 4a–4c · Настройка: галки ставит проверка системы, а не пользователь -->
+    <string name="setup_title">Complete both steps to start sharing</string>
+    <string name="setup_background">Allow background activity</string>
+    <string name="setup_autostart">Allow autostart on boot</string>
+    <string name="setup_open_settings">OPEN SETTINGS →</string>
+    <string name="setup_done">DONE</string>
+    <string name="setup_continue">Continue</string>
+
     <!-- Ошибки входа — строкой на месте; тексты из Auth IO Aura -->
     <string name="error_no_connection">No connection · check your network</string>
     <string name="error_server">Server is not responding · try again later</string>

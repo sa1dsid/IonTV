@@ -3,6 +3,7 @@ package com.ionica.iontv.feature.consent
 import com.ionica.iontv.core.api.Server
 import com.ionica.iontv.core.api.TestApiStack
 import com.ionica.iontv.core.session.SessionTokens
+import com.ionica.iontv.core.system.DeviceSetupStore
 import com.ionica.iontv.feature.consent.data.CONSENT_VERSION
 import com.ionica.iontv.feature.consent.data.ConsentRepository
 import com.ionica.iontv.feature.consent.presentation.ConsentError
@@ -22,6 +23,8 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class ConsentViewModelTest : ViewModelTestCase() {
 
+    private val setupStore by lazy { DeviceSetupStore(preferences("device")) }
+
     @Test
     fun `agreeing records the consent for this tv with the text version`() = screen { stack ->
         linked(stack)
@@ -35,13 +38,28 @@ class ConsentViewModelTest : ViewModelTestCase() {
         viewModel.onAgreeClick()
         settle("agreed") { events.isNotEmpty() }
 
-        assertEquals(listOf(ConsentEvent.Agreed), events)
+        assertEquals(listOf(ConsentEvent.Agreed(setupPending = true)), events)
         assertEquals(
             """{"granted":true,"version":"$CONSENT_VERSION","screen":"consent"}""",
             stack.server.bodyOf(path),
         )
         assertEquals(listOf("Bearer tv.access"), stack.server.authorizationsOf(path))
         assertEquals(CONSENT_VERSION, stack.sessionStore.consentVersion())
+    }
+
+    @Test
+    fun `a tv that already went through the checklist skips it after consent`() = screen { stack ->
+        linked(stack)
+        setupStore.markSetupCompleted()
+        stack.server.next(ConsentPaths.of(stack.sessionStore.deviceId()), body = """{"granted":true}""")
+        val viewModel = consent(stack)
+        val events = mutableListOf<ConsentEvent>()
+        backgroundScope.launch { viewModel.events.toList(events) }
+
+        viewModel.onAgreeClick()
+        settle("agreed") { events.isNotEmpty() }
+
+        assertEquals(listOf(ConsentEvent.Agreed(setupPending = false)), events)
     }
 
     @Test
@@ -86,6 +104,7 @@ class ConsentViewModelTest : ViewModelTestCase() {
 
     private fun consent(stack: TestApiStack) = ConsentViewModel(
         consent = ConsentRepository(stack.api, stack.sessionStore),
+        setupStore = setupStore,
     )
 }
 

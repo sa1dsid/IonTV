@@ -47,7 +47,7 @@ private val LegalQrCorner = 7.dp
 
 @Composable
 fun ConsentRoute(
-    onAgreed: () -> Unit,
+    onAgreed: (setupPending: Boolean) -> Unit,
     onExit: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ConsentViewModel = hiltViewModel(),
@@ -57,7 +57,7 @@ fun ConsentRoute(
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
-                ConsentEvent.Agreed -> onAgreed()
+                is ConsentEvent.Agreed -> onAgreed(event.setupPending)
                 ConsentEvent.ExitApp -> onExit()
             }
         }

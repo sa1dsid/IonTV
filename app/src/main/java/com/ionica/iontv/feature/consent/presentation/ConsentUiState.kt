@@ -10,6 +10,7 @@ data class ConsentUiState(
 enum class ConsentError { NO_CONNECTION, SERVER }
 
 sealed interface ConsentEvent {
-    data object Agreed : ConsentEvent
+    /** [setupPending] — чеклист на этом телевизоре ещё не проходили. */
+    data class Agreed(val setupPending: Boolean) : ConsentEvent
     data object ExitApp : ConsentEvent
 }

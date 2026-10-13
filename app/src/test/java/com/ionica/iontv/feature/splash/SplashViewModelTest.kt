@@ -5,6 +5,7 @@ import com.ionica.iontv.core.api.Paths
 import com.ionica.iontv.core.api.TestApiStack
 import com.ionica.iontv.core.common.TimeSource
 import com.ionica.iontv.core.session.SessionTokens
+import com.ionica.iontv.core.system.DeviceSetupStore
 import com.ionica.iontv.feature.consent.data.CONSENT_VERSION
 import com.ionica.iontv.feature.consent.data.ConsentRepository
 import com.ionica.iontv.feature.splash.domain.ResolveStartDestinationUseCase
@@ -26,6 +27,8 @@ private const val HEALTHY = """{"status":"ok","enabled":true}"""
 @OptIn(ExperimentalCoroutinesApi::class)
 class SplashViewModelTest : ViewModelTestCase() {
 
+    private val setupStore by lazy { DeviceSetupStore(preferences("device")) }
+
     @Test
     fun `a tv without a session goes to sign in`() = screen { stack ->
         stack.server.always(Paths.HEALTH, body = HEALTHY)
@@ -41,6 +44,7 @@ class SplashViewModelTest : ViewModelTestCase() {
     fun `a linked tv goes straight to the dashboard`() = screen { stack ->
         stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
         stack.sessionStore.saveConsent(CONSENT_VERSION)
+        setupStore.markSetupCompleted()
         stack.server.always(Paths.HEALTH, body = HEALTHY)
 
         val viewModel = splash(stack)
@@ -58,6 +62,18 @@ class SplashViewModelTest : ViewModelTestCase() {
         settleIdle("destination") { viewModel.uiState.value.destination != null }
 
         assertEquals(StartDestination.CONSENT, viewModel.uiState.value.destination)
+    }
+
+    @Test
+    fun `a linked tv that never finished the checklist goes back to it`() = screen { stack ->
+        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
+        stack.sessionStore.saveConsent(CONSENT_VERSION)
+        stack.server.always(Paths.HEALTH, body = HEALTHY)
+
+        val viewModel = splash(stack)
+        settleIdle("destination") { viewModel.uiState.value.destination != null }
+
+        assertEquals(StartDestination.SETUP, viewModel.uiState.value.destination)
     }
 
     @Test
@@ -118,6 +134,7 @@ class SplashViewModelTest : ViewModelTestCase() {
         resolveStartDestination = ResolveStartDestinationUseCase(
             sessionStore = stack.sessionStore,
             consent = ConsentRepository(stack.api, stack.sessionStore),
+            setupStore = setupStore,
         ),
         timeSource = TimeSource { testScheduler.currentTime },
     )
