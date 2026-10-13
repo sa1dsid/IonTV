@@ -54,6 +54,10 @@
     <string name="setup_done">DONE</string>
     <string name="setup_continue">Continue</string>
 
+    <!-- Уведомление сервиса раздачи: телевизоры его обычно не показывают -->
+    <string name="sharing_notification_channel">Data Share</string>
+    <string name="sharing_notification_text">Data Share is running</string>
+
     <!-- Ошибки входа — строкой на месте; тексты из Auth IO Aura -->
     <string name="error_no_connection">No connection · check your network</string>
     <string name="error_server">Server is not responding · try again later</string>

@@ -9,6 +9,8 @@ import com.ionica.iontv.core.api.dto.EmailInputDto
 import com.ionica.iontv.core.api.dto.EmailLoginDto
 import com.ionica.iontv.core.api.dto.GoogleLoginDto
 import com.ionica.iontv.core.api.dto.HealthDto
+import com.ionica.iontv.core.api.dto.HeartbeatDto
+import com.ionica.iontv.core.api.dto.HeartbeatResultDto
 import com.ionica.iontv.core.api.dto.PairingCodeDto
 import com.ionica.iontv.core.api.dto.PairingPollDto
 import com.ionica.iontv.core.api.dto.PairingPollRequestDto
@@ -63,6 +65,10 @@ interface IonTvApi {
         @Path("deviceId") deviceId: String,
         @Body body: ConsentDto,
     ): ConsentStateDto
+
+    /** Только TV-сессией. В ответе — привязан ли ещё ТВ и как бэкенд видит его статус. */
+    @POST("api/v1/iontv/tv/heartbeat")
+    suspend fun heartbeat(@Body body: HeartbeatDto): HeartbeatResultDto
 
     /** 204 без тела. Без явного токена отзывает текущую TV-сессию. */
     @POST("api/v1/iontv/auth/logout")

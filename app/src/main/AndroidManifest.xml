@@ -12,6 +12,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- Чеклист проверяет, есть ли на устройстве экран снятия оптимизации батареи:
          без этих записей Android 11+ не покажет системные экраны настроек. -->
@@ -48,6 +51,26 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Раздача трафика круглые сутки. specialUse: ни один стандартный тип не подходит,
+             а dataSync на Android 15 ограничен шестью часами и не стартует после загрузки. -->
+        <service
+            android:name=".feature.sharing.service.SharingService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Data Share: the TV shares part of its internet channel for partner analytics with user consent and reports its status to the IONTV backend." />
+        </service>
+
+        <receiver
+            android:name=".feature.sharing.service.BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
