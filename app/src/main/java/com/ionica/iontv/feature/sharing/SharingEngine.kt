@@ -9,14 +9,17 @@ import com.ionica.iontv.feature.sharing.data.HeartbeatRepository
 import com.ionica.iontv.feature.sharing.domain.model.PauseReason
 import com.ionica.iontv.feature.sharing.domain.model.SharingState
 import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
@@ -60,12 +63,16 @@ class SharingEngine @Inject constructor(
 
     private val server = MutableStateFlow<ServerView?>(null)
 
+    private val refreshes = Channel<Unit>(Channel.CONFLATED)
+
     override val state: Flow<SharingState> = combine(networkMonitor.status, batteryOk, server) { network, battery, server ->
         SharingState(status = resolveStatus(network, battery, server), connection = network.connection)
     }
 
     /** Возвращается, когда сессия кончилась: ТВ отвязали или бэкенд отклонил токен. */
     suspend fun run() = running.withLock {
+        // Первый heartbeat и так уходит сразу — старая просьба спросить сервер не нужна.
+        refreshes.tryReceive()
         while (sessionStore.current() != null) {
             val conditions = readConditions()
             if (!conditions.network.isOnline) {
@@ -101,15 +108,22 @@ class SharingEngine @Inject constructor(
         batteryOk.value = isBatteryOk()
     }
 
+    override fun refresh() {
+        server.value = null
+        refreshes.trySend(Unit)
+    }
+
     /**
      * Ждёт следующего heartbeat, но просыпается раньше, если пропала или вернулась сеть,
      * сменился тип подключения или оптимизация батареи: бэкенд должен узнать об этом сразу.
      */
     private suspend fun awaitChange(sent: Conditions, timeout: Duration?) {
         val changed = suspend {
-            merge(networkMonitor.status.map { }, ticker(LOCAL_CHECK_INTERVAL))
+            val conditionsChanged = merge(networkMonitor.status.map { }, ticker(LOCAL_CHECK_INTERVAL))
                 .map { readConditions() }
-                .first { it != sent }
+                .filter { it != sent }
+                .map { }
+            merge(conditionsChanged, refreshes.receiveAsFlow()).first()
         }
         if (timeout == null) changed() else withTimeoutOrNull(timeout) { changed() }
     }

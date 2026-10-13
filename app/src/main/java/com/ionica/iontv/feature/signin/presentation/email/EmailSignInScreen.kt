@@ -90,6 +90,13 @@ fun EmailSignInScreen(
         if (onCodeStep) codeFocus.requestFocus() else emailFocus.requestFocus()
     }
 
+    // После «Resend» кнопку сразу выключает отсчёт, и фокус ушёл бы в никуда —
+    // возвращаем его в поле, куда сейчас вводить новый код.
+    val resendLocked = uiState.resendInSeconds > 0
+    LaunchedEffect(resendLocked) {
+        if (onCodeStep && resendLocked) codeFocus.requestFocus()
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -141,7 +148,7 @@ fun EmailSignInScreen(
                 TvButton(
                     text = stringResource(R.string.email_sign_in),
                     onClick = onSignInClick,
-                    enabled = !uiState.submitting,
+                    busy = uiState.submitting,
                 )
                 TvButton(
                     text = if (uiState.resendInSeconds > 0) {
@@ -150,14 +157,15 @@ fun EmailSignInScreen(
                         stringResource(R.string.email_resend)
                     },
                     onClick = onResendClick,
-                    enabled = uiState.resendInSeconds == 0 && !uiState.submitting,
+                    enabled = uiState.resendInSeconds == 0,
+                    busy = uiState.submitting,
                     tone = TvButtonTone.MUTED,
                 )
             } else {
                 TvButton(
                     text = stringResource(R.string.email_send_code),
                     onClick = onSendCodeClick,
-                    enabled = !uiState.submitting,
+                    busy = uiState.submitting,
                 )
             }
         }

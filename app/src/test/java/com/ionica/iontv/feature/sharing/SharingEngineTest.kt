@@ -71,6 +71,25 @@ class SharingEngineTest : ViewModelTestCase() {
     }
 
     @Test
+    fun `consent given again is checked with the backend right away`() = screen { stack ->
+        stack.server.always(
+            HEARTBEAT,
+            body = """{"bound":true,"status":"paused","reason":"consent_required","interval_id":null}""",
+        )
+        val engine = engine(stack)
+        val state = observe(engine)
+        start(engine, stack)
+        settle("paused for consent") { state()?.status == SharingStatus.Paused(PauseReason.CONSENT_REQUIRED) }
+
+        stack.server.always(HEARTBEAT, body = ACTIVE)
+        engine.refresh()
+
+        // Время теста стоит: второй heartbeat ушёл сразу, а не через десять минут.
+        settle("fresh heartbeat") { stack.server.hits(HEARTBEAT) == 2 }
+        settle("active") { state()?.status == SharingStatus.Active }
+    }
+
+    @Test
     fun `battery optimization switched back on pauses at once and tells the backend early`() =
         screen { stack ->
             stack.server.always(HEARTBEAT, body = ACTIVE)

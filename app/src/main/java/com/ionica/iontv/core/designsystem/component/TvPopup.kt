@@ -25,6 +25,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,7 +45,8 @@ private val PopupWidth = 540.dp
 /**
  * Попап подтверждения. По ТЗ их в приложении два, и оба — на разрушительных действиях,
  * поэтому фокус встаёт на безопасную кнопку, а «Назад» на пульте означает её же.
- * Пульт не может увести фокус из попапа на экран под ним.
+ * Пульт не может увести фокус из попапа на экран под ним. Пока выбранное действие
+ * выполняется ([busy]), кнопки и «Назад» молчат, а фокус остаётся в попапе.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -52,6 +58,7 @@ fun TvPopup(
     riskyActionText: String,
     onRiskyAction: () -> Unit,
     modifier: Modifier = Modifier,
+    busy: Boolean = false,
     safeActionInteraction: MutableInteractionSource? = null,
 ) {
     val colors = IonTvTheme.colors
@@ -59,7 +66,7 @@ fun TvPopup(
     val safeFocus = remember { FocusRequester() }
     val shape = RoundedCornerShape(PopupCorner)
 
-    BackHandler(onBack = onSafeAction)
+    BackHandler { if (!busy) onSafeAction() }
 
     LaunchedEffect(Unit) { safeFocus.requestFocus() }
 
@@ -75,6 +82,13 @@ fun TvPopup(
                 .background(colors.fieldSurface, shape)
                 .border(1.dp, colors.outline, shape)
                 .padding(start = 34.dp, top = 34.dp, end = 34.dp, bottom = 30.dp)
+                // Compose считает «Назад» выходом из группы фокуса, а выход здесь отменён,
+                // поэтому до BackHandler нажатие не доходит — ловим его сами.
+                .onPreviewKeyEvent { event ->
+                    if (event.key != Key.Back && event.key != Key.Escape) return@onPreviewKeyEvent false
+                    if (event.type == KeyEventType.KeyUp && !busy) onSafeAction()
+                    true
+                }
                 .focusProperties { exit = { FocusRequester.Cancel } }
                 .focusGroup(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -98,11 +112,13 @@ fun TvPopup(
                     text = safeActionText,
                     onClick = onSafeAction,
                     modifier = Modifier.focusRequester(safeFocus),
+                    busy = busy,
                     interactionSource = safeActionInteraction,
                 )
                 TvButton(
                     text = riskyActionText,
                     onClick = onRiskyAction,
+                    busy = busy,
                     tone = TvButtonTone.MUTED,
                 )
             }

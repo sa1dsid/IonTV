@@ -69,6 +69,8 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun onKeepLinkedClick() {
+        // Отвязка уже идёт и не отменяется — попап не прячем, чтобы не делать вид, что передумали.
+        if (_uiState.value.unlinking) return
         _uiState.update { it.copy(confirmingUnlink = false) }
     }
 

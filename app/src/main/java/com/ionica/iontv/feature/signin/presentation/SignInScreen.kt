@@ -99,7 +99,11 @@ fun SignInScreen(
     val typography = IonTvTheme.typography
     val primaryFocus = remember { FocusRequester() }
 
-    LaunchedEffect(Unit) { primaryFocus.requestFocus() }
+    // Refresh пропадает сразу после нажатия — фокус возвращается на основную кнопку.
+    val expired = uiState.pairing == PairingUi.Expired
+    LaunchedEffect(expired) {
+        if (!expired) primaryFocus.requestFocus()
+    }
 
     Row(
         modifier = modifier

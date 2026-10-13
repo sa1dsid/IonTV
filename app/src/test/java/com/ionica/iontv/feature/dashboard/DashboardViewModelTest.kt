@@ -154,6 +154,13 @@ internal class FakeSharingMonitor : SharingMonitor {
     override fun recheckBattery() {
         rechecks++
     }
+
+    var refreshes = 0
+        private set
+
+    override fun refresh() {
+        refreshes++
+    }
 }
 
 internal class FakeSharingController : SharingController {

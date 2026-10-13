@@ -128,7 +128,7 @@ fun ConsentScreen(
                 TvButton(
                     text = stringResource(R.string.consent_agree),
                     onClick = onAgreeClick,
-                    enabled = !uiState.submitting,
+                    busy = uiState.submitting,
                     modifier = Modifier.focusRequester(agreeFocus),
                     interactionSource = agreeInteraction,
                 )

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ionica.iontv.core.api.apiError
 import com.ionica.iontv.core.system.DeviceSetupStore
 import com.ionica.iontv.feature.consent.data.ConsentRepository
+import com.ionica.iontv.feature.sharing.SharingMonitor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +21,7 @@ import javax.inject.Inject
 class ConsentViewModel @Inject constructor(
     private val consent: ConsentRepository,
     private val setupStore: DeviceSetupStore,
+    private val sharing: SharingMonitor,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ConsentUiState())
@@ -35,6 +37,7 @@ class ConsentViewModel @Inject constructor(
             _uiState.update { it.copy(submitting = true, error = null) }
             consent.grant()
                 .onSuccess {
+                    sharing.refresh()
                     eventChannel.send(ConsentEvent.Agreed(setupPending = !setupStore.isSetupCompleted()))
                 }
                 .onFailure { error ->

@@ -1,5 +1,6 @@
 package com.ionica.iontv.feature.dashboard.presentation
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -119,7 +120,7 @@ fun DashboardScreen(
 ) {
     val colors = IonTvTheme.colors
     val rootFocus = remember { FocusRequester() }
-    val longPress = remember { LongPressTracker(LONG_PRESS_MILLIS) }
+    val remote = remember { RemoteKeys(LONG_PRESS_MILLIS) }
     var ambient by remember { mutableStateOf(false) }
     var lastInput by remember { mutableIntStateOf(0) }
 
@@ -132,11 +133,15 @@ fun DashboardScreen(
     }
 
     // На ACTIVE и OFFLINE кнопок нет, а в ambient их нет нигде, но пульт должен
-    // попадать в экран — иначе не поймать долгое OK и не разбудить дашборд.
-    LaunchedEffect(uiState.confirmingUnlink, uiState.status, ambient) {
-        val buttonOnScreen = !ambient && uiState.status.hasSettingsButton()
+    // попадать в экран — иначе не поймать долгое OK и не разбудить дашборд. Когда кнопка
+    // есть, сам экран фокус не берёт: «Назад» с кнопки ушёл бы на него, а не из приложения.
+    val buttonOnScreen = !ambient && uiState.status.hasSettingsButton()
+    LaunchedEffect(uiState.confirmingUnlink, buttonOnScreen) {
         if (!uiState.confirmingUnlink && !buttonOnScreen) rootFocus.requestFocus()
     }
+
+    // С Android 16 «Назад» приходит не клавишей, а системным жестом — будим и им.
+    BackHandler(enabled = ambient) { ambient = false }
 
     Box(
         modifier = modifier
@@ -144,23 +149,23 @@ fun DashboardScreen(
             .background(colors.background)
             .onPreviewKeyEvent { event ->
                 lastInput++
+                if (remote.swallowsTail(event.nativeKeyEvent)) return@onPreviewKeyEvent true
                 // Любая кнопка будит дашборд, но сама никуда дальше не нажимается.
                 if (ambient) {
-                    if (event.type == KeyEventType.KeyDown) ambient = false
+                    if (event.type == KeyEventType.KeyDown) {
+                        ambient = false
+                        remote.swallowRestOf(event.nativeKeyEvent)
+                    }
                     return@onPreviewKeyEvent true
                 }
                 if (uiState.confirmingUnlink) return@onPreviewKeyEvent false
                 val isOk = event.key == Key.DirectionCenter || event.key == Key.Enter || event.key == Key.NumPadEnter
-                if (!isOk) return@onPreviewKeyEvent false
+                if (!isOk || event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
 
-                when (event.type) {
-                    KeyEventType.KeyDown -> longPress.onDown(event.nativeKeyEvent, onLongPressOk)
-                    KeyEventType.KeyUp -> longPress.onUp()
-                    else -> false
-                }
+                remote.onOkDown(event.nativeKeyEvent, onLongPressOk)
             }
             .focusRequester(rootFocus)
-            .focusable()
+            .focusable(enabled = !buttonOnScreen)
             .testTag(DASHBOARD_TAG),
     ) {
         if (ambient) {
@@ -174,6 +179,7 @@ fun DashboardScreen(
                 DashboardHeader(uiState)
                 StatusBlock(
                     status = uiState.status,
+                    popupOpen = uiState.confirmingUnlink,
                     onOpenSettingsClick = onOpenSettingsClick,
                     settingsInteraction = settingsInteraction,
                     modifier = Modifier.weight(1f),
@@ -190,6 +196,7 @@ fun DashboardScreen(
                 onSafeAction = onKeepLinkedClick,
                 riskyActionText = stringResource(R.string.dashboard_unlink),
                 onRiskyAction = onUnlinkClick,
+                busy = uiState.unlinking,
                 safeActionInteraction = popupInteraction,
             )
         }
@@ -229,6 +236,7 @@ private fun DashboardHeader(uiState: DashboardUiState) {
 @Composable
 private fun StatusBlock(
     status: SharingStatus,
+    popupOpen: Boolean,
     onOpenSettingsClick: () -> Unit,
     settingsInteraction: MutableInteractionSource?,
     modifier: Modifier = Modifier,
@@ -239,8 +247,9 @@ private fun StatusBlock(
     val accent = if (active) colors.success else colors.danger
     val settingsFocus = remember { FocusRequester() }
 
-    LaunchedEffect(status) {
-        if (status.hasSettingsButton()) settingsFocus.requestFocus()
+    // И после закрытия попапа: его кнопки уходят вместе с фокусом.
+    LaunchedEffect(status, popupOpen) {
+        if (status.hasSettingsButton() && !popupOpen) settingsFocus.requestFocus()
     }
 
     Column(
@@ -339,27 +348,40 @@ private fun Connection.label(): String? = when (this) {
 }
 
 /**
- * Долгое OK по времени удержания: пульт присылает повторы нажатия, и первый повтор
- * после порога открывает отвязку. Отпускание после этого съедаем — иначе кнопка
- * в фокусе сработала бы следом.
+ * Пульт на дашборде. Долгое OK считаем по времени удержания: пульт присылает повторы
+ * нажатия, и первый повтор после порога открывает отвязку.
+ *
+ * Нажатие, которое уже сработало (открыло отвязку или разбудило экран), доедаем
+ * до отпускания: Compose нажимает кнопку в фокусе на отпускание OK, и без этого
+ * отпускание сразу нажало бы «Keep linked» в попапе или «Open settings».
  */
-private class LongPressTracker(private val thresholdMillis: Long) {
+private class RemoteKeys(private val longPressMillis: Long) {
 
-    private var fired = false
+    private var swallowedKey: Int? = null
 
-    fun onDown(event: android.view.KeyEvent, onLongPress: () -> Unit): Boolean {
-        if (event.repeatCount == 0) {
-            fired = false
+    fun swallowRestOf(event: android.view.KeyEvent) {
+        swallowedKey = event.keyCode
+    }
+
+    fun swallowsTail(event: android.view.KeyEvent): Boolean {
+        if (event.keyCode != swallowedKey) return false
+        // Новое нажатие той же кнопки: отпускание прошлого потерялось, не держим его.
+        if (event.action == android.view.KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+            swallowedKey = null
             return false
         }
-        if (!fired && event.eventTime - event.downTime >= thresholdMillis) {
-            fired = true
+        if (event.action == android.view.KeyEvent.ACTION_UP) swallowedKey = null
+        return true
+    }
+
+    fun onOkDown(event: android.view.KeyEvent, onLongPress: () -> Unit): Boolean {
+        if (event.repeatCount == 0) return false
+        if (event.eventTime - event.downTime >= longPressMillis) {
+            swallowRestOf(event)
             onLongPress()
         }
         return true
     }
-
-    fun onUp(): Boolean = fired.also { fired = false }
 }
 
 @Preview(widthDp = 960, heightDp = 540)

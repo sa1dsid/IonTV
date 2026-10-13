@@ -9,6 +9,7 @@ import com.ionica.iontv.feature.consent.data.ConsentRepository
 import com.ionica.iontv.feature.consent.presentation.ConsentError
 import com.ionica.iontv.feature.consent.presentation.ConsentEvent
 import com.ionica.iontv.feature.consent.presentation.ConsentViewModel
+import com.ionica.iontv.feature.dashboard.FakeSharingMonitor
 import com.ionica.iontv.testing.ViewModelTestCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
@@ -24,6 +25,8 @@ import org.junit.Test
 class ConsentViewModelTest : ViewModelTestCase() {
 
     private val setupStore by lazy { DeviceSetupStore(preferences("device")) }
+
+    private val sharing = FakeSharingMonitor()
 
     @Test
     fun `agreeing records the consent for this tv with the text version`() = screen { stack ->
@@ -45,6 +48,8 @@ class ConsentViewModelTest : ViewModelTestCase() {
         )
         assertEquals(listOf("Bearer tv.access"), stack.server.authorizationsOf(path))
         assertEquals(CONSENT_VERSION, stack.sessionStore.consentVersion())
+        // Прошлый ответ сервера мог быть «нужно согласие» — раздача спрашивает его заново.
+        assertEquals(1, sharing.refreshes)
     }
 
     @Test
@@ -105,6 +110,7 @@ class ConsentViewModelTest : ViewModelTestCase() {
     private fun consent(stack: TestApiStack) = ConsentViewModel(
         consent = ConsentRepository(stack.api, stack.sessionStore),
         setupStore = setupStore,
+        sharing = sharing,
     )
 }
 

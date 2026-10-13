@@ -44,7 +44,8 @@ enum class TvButtonTone {
 
 /**
  * Кнопка под D-pad. Выключенная кнопка не берёт фокус: пульт её просто перескакивает,
- * как заблокированный Continue в чеклисте.
+ * как заблокированный Continue в чеклисте. Занятая ([busy]) — пока идёт её запрос —
+ * выглядит выключенной, но фокус держит: иначе после ошибки OK на пульте уходило бы в никуда.
  */
 @Composable
 fun TvButton(
@@ -52,6 +53,7 @@ fun TvButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    busy: Boolean = false,
     tone: TvButtonTone = TvButtonTone.NORMAL,
     interactionSource: MutableInteractionSource? = null,
 ) {
@@ -64,8 +66,8 @@ fun TvButton(
     Box(
         modifier = modifier
             .focusRing(focused = focused && enabled, cornerRadius = ButtonCorner)
-            .pressScale(pressed)
-            .alpha(if (enabled) 1f else DISABLED_ALPHA)
+            .pressScale(pressed && !busy)
+            .alpha(if (enabled && !busy) 1f else DISABLED_ALPHA)
             .clip(shape)
             .background(colors.buttonSurface)
             .border(1.dp, colors.outline, shape)
@@ -73,7 +75,7 @@ fun TvButton(
                 interactionSource = source,
                 indication = null,
                 enabled = enabled,
-                onClick = onClick,
+                onClick = { if (!busy) onClick() },
             )
             .padding(horizontal = 32.dp, vertical = 15.dp),
         contentAlignment = Alignment.Center,
