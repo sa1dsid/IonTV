@@ -18,9 +18,8 @@ val localProperties = Properties().apply {
 fun localProperty(name: String): String? =
     localProperties.getProperty(name)?.trim()?.removeSurrounding("\"")
 
-// Пока бэкенд IONTV доступен только по IP dev-сервера. Боевой адрес — в local.properties
-// (IONTV_API_BASE_URL), когда появится домен.
-val DEFAULT_API_BASE_URL = "https://2.28.124.251:8443/"
+// Dev-бэкенд IONTV. Боевой адрес — в local.properties (IONTV_API_BASE_URL).
+val DEFAULT_API_BASE_URL = "https://dev.ioaura.ionika.cc/"
 
 // Веб-клиент Google проекта io-aura: аккаунт у TV и IO Aura общий. Для пакета
 // com.ionica.iontv в том же проекте нужен Android-клиент с SHA-1 ключа подписи.
