@@ -90,7 +90,7 @@ class RemoteHoldTest {
 
     @Test
     fun `keep linked on a paused dashboard gives the focus back to open settings`() {
-        dashboard(DashboardUiState(status = SharingStatus.Paused(PauseReason.BATTERY_OPTIMIZATION), username = "syrex"))
+        dashboard(DashboardUiState(status = SharingStatus.Paused(PauseReason.BATTERY_OPTIMIZATION)))
         // Телевизор без сенсора сразу отдаёт кнопке фокус; Robolectric стартует в режиме касаний.
         compose.onNodeWithText(OPEN_SETTINGS).performSemanticsAction(SemanticsActions.RequestFocus)
         settle()
@@ -108,7 +108,7 @@ class RemoteHoldTest {
 
     @Test
     fun `while unlinking the popup ignores the remote`() {
-        dashboard(DashboardUiState(username = "syrex", confirmingUnlink = true, unlinking = true))
+        dashboard(DashboardUiState(confirmingUnlink = true, unlinking = true))
 
         compose.onRoot().performKeyInput { pressKey(Key.DirectionCenter) }
         compose.onRoot().performKeyInput { pressKey(Key.Back) }
@@ -130,7 +130,7 @@ class RemoteHoldTest {
 
     @Test
     fun `waking a paused dashboard does not press open settings`() {
-        dashboard(DashboardUiState(status = SharingStatus.Paused(PauseReason.BATTERY_OPTIMIZATION), username = "syrex"))
+        dashboard(DashboardUiState(status = SharingStatus.Paused(PauseReason.BATTERY_OPTIMIZATION)))
         compose.mainClock.advanceTimeBy(61_000)
         compose.onNodeWithTag(AMBIENT_TAG).assertExists()
 
@@ -166,7 +166,7 @@ class RemoteHoldTest {
     }
 
     private fun dashboard(
-        initial: DashboardUiState = DashboardUiState(username = "syrex", connection = Connection.ETHERNET),
+        initial: DashboardUiState = DashboardUiState(connection = Connection.ETHERNET),
     ) {
         compose.mainClock.autoAdvance = false
         compose.setContent {

@@ -20,7 +20,7 @@ class IonTvRootViewModelTest : ViewModelTestCase() {
         runCurrent()
         assertTrue(ends.isEmpty())
 
-        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
+        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"))
         settle("linked") { stack.sessionStore.blockingCurrent() != null }
         assertTrue(ends.isEmpty())
 
@@ -31,7 +31,7 @@ class IonTvRootViewModelTest : ViewModelTestCase() {
 
     @Test
     fun `a linked tv learns when its session is closed from the background`() = screen { stack ->
-        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
+        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"))
         val ends = mutableListOf<Unit>()
         backgroundScope.launch { IonTvRootViewModel(stack.sessionStore).sessionEnded.toList(ends) }
         runCurrent()

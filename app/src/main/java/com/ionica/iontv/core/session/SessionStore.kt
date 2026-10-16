@@ -22,11 +22,9 @@ private val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
 
 private val BINDING_ID = stringPreferencesKey("binding_id")
 
-private val USERNAME = stringPreferencesKey("username")
-
 private val CONSENT_VERSION = stringPreferencesKey("consent_version")
 
-private val SESSION_KEYS = listOf(ACCESS_TOKEN, REFRESH_TOKEN, BINDING_ID, USERNAME, CONSENT_VERSION)
+private val SESSION_KEYS = listOf(ACCESS_TOKEN, REFRESH_TOKEN, BINDING_ID, CONSENT_VERSION)
 
 @Singleton
 class SessionStore @Inject constructor(
@@ -58,12 +56,9 @@ class SessionStore @Inject constructor(
     /** Для перехватчиков OkHttp: они работают на потоке запроса и не умеют приостанавливаться. */
     fun blockingCurrent(): TvSession? = if (loaded) cached else runBlocking { current() }
 
-    suspend fun open(tokens: SessionTokens, username: String?) {
-        dataStore.edit { preferences ->
-            preferences.putTokens(tokens)
-            preferences.putOrRemove(USERNAME, username)
-        }
-        cached = TvSession(tokens.accessToken, tokens.refreshToken, tokens.bindingId, username)
+    suspend fun open(tokens: SessionTokens) {
+        dataStore.edit { it.putTokens(tokens) }
+        cached = TvSession(tokens.accessToken, tokens.refreshToken, tokens.bindingId)
         loaded = true
     }
 
@@ -120,7 +115,6 @@ private fun Preferences.toSession(): TvSession? {
         accessToken = access,
         refreshToken = refresh,
         bindingId = this[BINDING_ID],
-        username = this[USERNAME],
     )
 }
 

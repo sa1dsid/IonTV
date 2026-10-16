@@ -42,7 +42,7 @@ class SplashViewModelTest : ViewModelTestCase() {
 
     @Test
     fun `a linked tv goes straight to the dashboard`() = screen { stack ->
-        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
+        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"))
         stack.sessionStore.saveConsent(CONSENT_VERSION)
         setupStore.markSetupCompleted()
         stack.server.always(Paths.HEALTH, body = HEALTHY)
@@ -55,7 +55,7 @@ class SplashViewModelTest : ViewModelTestCase() {
 
     @Test
     fun `a linked tv without consent asks for it first`() = screen { stack ->
-        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
+        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"))
         stack.server.always(Paths.HEALTH, body = HEALTHY)
 
         val viewModel = splash(stack)
@@ -66,7 +66,7 @@ class SplashViewModelTest : ViewModelTestCase() {
 
     @Test
     fun `a linked tv that never finished the checklist goes back to it`() = screen { stack ->
-        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
+        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"))
         stack.sessionStore.saveConsent(CONSENT_VERSION)
         stack.server.always(Paths.HEALTH, body = HEALTHY)
 
@@ -78,7 +78,7 @@ class SplashViewModelTest : ViewModelTestCase() {
 
     @Test
     fun `consent to an older text does not count`() = screen { stack ->
-        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"), username = null)
+        stack.sessionStore.open(SessionTokens("access", "refresh", "binding"))
         stack.sessionStore.saveConsent("tv-consent-v0")
         stack.server.always(Paths.HEALTH, body = HEALTHY)
 
@@ -133,7 +133,7 @@ class SplashViewModelTest : ViewModelTestCase() {
         backendHealth = BackendHealth(stack.api),
         resolveStartDestination = ResolveStartDestinationUseCase(
             sessionStore = stack.sessionStore,
-            consent = ConsentRepository(stack.api, stack.sessionStore),
+            consent = ConsentRepository(stack.api, stack.sessionStore, stack.serverClock),
             setupStore = setupStore,
         ),
         timeSource = TimeSource { testScheduler.currentTime },

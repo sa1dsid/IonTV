@@ -35,9 +35,8 @@ abstract class ApiTestCase {
     internal suspend fun TestApiStack.linked(
         access: String = "tv.access.old",
         refresh: String = "tv.refresh.old",
-        username: String? = null,
     ) {
-        sessionStore.open(SessionTokens(access, refresh, BINDING_ID), username)
+        sessionStore.open(SessionTokens(access, refresh, BINDING_ID))
     }
 
     internal companion object {

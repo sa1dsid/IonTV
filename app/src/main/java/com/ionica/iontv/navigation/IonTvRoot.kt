@@ -15,24 +15,22 @@ import com.ionica.iontv.feature.consent.presentation.ConsentRoute
 import com.ionica.iontv.feature.dashboard.presentation.DashboardRoute
 import com.ionica.iontv.feature.setup.presentation.SetupRoute
 import com.ionica.iontv.feature.signin.presentation.SignInRoute
-import com.ionica.iontv.feature.signin.presentation.email.EmailSignInRoute
 import com.ionica.iontv.feature.splash.domain.StartDestination
 import com.ionica.iontv.feature.splash.presentation.SplashRoute
 
 private object Routes {
     const val SPLASH = "splash"
     const val SIGN_IN = "sign_in"
-    const val EMAIL_SIGN_IN = "email_sign_in"
     const val CONSENT = "consent"
     const val SETUP = "setup"
     const val DASHBOARD = "dashboard"
 }
 
 // Экраны, где сессии ещё нет: конец сессии их не касается.
-private val SIGNED_OUT_ROUTES = setOf(Routes.SPLASH, Routes.SIGN_IN, Routes.EMAIL_SIGN_IN)
+private val SIGNED_OUT_ROUTES = setOf(Routes.SPLASH, Routes.SIGN_IN)
 
 /**
- * Поток экранов: сплэш → вход (QR, Google или почта) → согласие → чеклист → дашборд.
+ * Поток экранов: сплэш → привязка по QR → согласие → чеклист → дашборд.
  * Шаги вперёд не оставляют истории: «Назад» с дашборда выходит из приложения, а не
  * возвращает к входу, — раздача при этом продолжается в сервисе.
  */
@@ -63,16 +61,7 @@ fun IonTvRoot(
             SplashRoute(onFinished = { destination -> navController.startOver(destination.route()) })
         }
         composable(Routes.SIGN_IN) {
-            SignInRoute(
-                onLinked = { navController.startOver(Routes.CONSENT) },
-                onEmailClick = { navController.navigate(Routes.EMAIL_SIGN_IN) },
-            )
-        }
-        composable(Routes.EMAIL_SIGN_IN) {
-            EmailSignInRoute(
-                onLinked = { navController.startOver(Routes.CONSENT) },
-                onBack = { navController.popBackStack() },
-            )
+            SignInRoute(onLinked = { navController.startOver(Routes.CONSENT) })
         }
         composable(Routes.CONSENT) {
             ConsentRoute(

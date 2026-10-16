@@ -60,18 +60,6 @@ class TokenRefreshTest : ApiTestCase() {
     }
 
     @Test
-    fun `an explicitly passed account token is never refreshed`() = api { stack ->
-        stack.linked()
-        stack.server.next(Paths.LOGOUT, code = 401, body = Server.detail("Authentication required"))
-
-        stack.api.logout(bearer("account.access"))
-
-        assertEquals(listOf("Bearer account.access"), stack.server.authorizationsOf(Paths.LOGOUT))
-        assertEquals(0, stack.server.hits(Paths.REFRESH))
-        assertEquals("tv.access.old", stack.sessionStore.current()?.accessToken)
-    }
-
-    @Test
     fun `public endpoints go out without the tv token`() = api { stack ->
         stack.linked()
         stack.server.next(Paths.HEALTH, body = """{"status":"ok","enabled":true}""")

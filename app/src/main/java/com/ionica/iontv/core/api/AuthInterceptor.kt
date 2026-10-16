@@ -10,9 +10,6 @@ import javax.inject.Singleton
 private val PUBLIC_PATHS = setOf(
     "/iontv/health",
     "/api/v1/iontv/auth/refresh",
-    "/api/v1/iontv/auth/email/code",
-    "/api/v1/iontv/auth/email/login",
-    "/api/v1/iontv/auth/google",
     "/api/v1/iontv/pairing/code",
     "/api/v1/iontv/pairing/poll",
 )
@@ -20,7 +17,7 @@ private val PUBLIC_PATHS = setOf(
 /** Метка запроса, подписанного TV-сессией: только такие запросы обновляют токен по 401. */
 class TvSessionAuth(val accessToken: String)
 
-/** Подписывает запросы токеном TV-сессии, если вызывающий не передал свой токен явно. */
+/** Подписывает запросы токеном TV-сессии; публичные пути уходят без него. */
 @Singleton
 class AuthInterceptor @Inject constructor(
     private val sessionStore: SessionStore,
@@ -28,7 +25,6 @@ class AuthInterceptor @Inject constructor(
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
-        if (request.header(AUTHORIZATION) != null) return chain.proceed(request)
         if (request.url.encodedPath in PUBLIC_PATHS) return chain.proceed(request)
 
         val session = sessionStore.blockingCurrent() ?: return chain.proceed(request)

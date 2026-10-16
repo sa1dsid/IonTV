@@ -74,7 +74,7 @@ class AmbientModeTest {
 
     @Test
     fun `the unlink question never goes dark`() {
-        dashboard(DashboardUiState(username = "syrex", confirmingUnlink = true))
+        dashboard(DashboardUiState(confirmingUnlink = true))
 
         compose.mainClock.advanceTimeBy(120_000)
 
@@ -88,7 +88,7 @@ class AmbientModeTest {
     }
 
     private fun dashboard(
-        uiState: DashboardUiState = DashboardUiState(username = "syrex", connection = Connection.ETHERNET),
+        uiState: DashboardUiState = DashboardUiState(connection = Connection.ETHERNET),
     ) {
         compose.mainClock.autoAdvance = false
         compose.setContent {

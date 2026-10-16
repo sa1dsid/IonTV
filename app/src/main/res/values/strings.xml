@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- IONTV · строки интерфейса (EN). Бренды не переводятся: IONTV, IO Aura, Data Share. -->
+<!-- IONTV · строки интерфейса (EN). Бренды не переводятся: IONTV, IonTV Pulse, IO Aura, Data Share. -->
 <resources>
     <string name="app_name" translatable="false">IONTV</string>
 
@@ -10,29 +10,10 @@
     <!-- Нет связи: заставка и экран входа повторяют сами, кнопок нет. -->
     <string name="no_connection_retrying">No connection · retrying…</string>
 
-    <!-- 2 · Вход: QR и код вводятся в IO Aura на телефоне -->
+    <!-- 2 · Привязка: входа на ТВ нет, QR сканируют на сайте IonTV Pulse или камерой телефона -->
     <string name="signin_title">Link this TV to your account</string>
-    <string name="signin_how">Open &lt;b&gt;IO Aura&lt;/b&gt; on your phone → &lt;b&gt;Devices&lt;/b&gt; → &lt;b&gt;Add TV&lt;/b&gt; and scan the code. Manual code entry is there too.</string>
+    <string name="signin_how">Scan the code with your phone camera, or open &lt;b&gt;IonTV Pulse&lt;/b&gt; → &lt;b&gt;Add device&lt;/b&gt;. Manual code entry is there too.</string>
     <string name="signin_enter_code">or enter code</string>
-    <string name="signin_code_expired">Code expired</string>
-    <string name="signin_refresh">Refresh</string>
-    <string name="signin_google">Continue with Google</string>
-    <string name="signin_or">OR</string>
-    <string name="signin_email">Sign in with email</string>
-
-    <!-- 2b · Вход по почте: у IONTV вход без пароля, по коду из письма -->
-    <string name="email_title">Sign in with email</string>
-    <string name="email_label">EMAIL</string>
-    <string name="email_placeholder">you@example.com</string>
-    <string name="email_send_code">Send code</string>
-    <string name="email_code_label">CODE</string>
-    <string name="email_code_placeholder">6-digit code from the email</string>
-    <string name="email_sign_in">Sign in</string>
-    <string name="email_resend">Resend code</string>
-    <string name="email_resend_in">Resend in %1$ds</string>
-    <string name="email_error_invalid">Invalid email format</string>
-    <string name="email_error_code">Invalid or expired code · request a new one</string>
-    <string name="email_error_too_soon">Too soon · wait a minute before asking for a new code</string>
 
     <!-- 3/3b · Согласие на Data Share: юртекст — финал терминального консента IO Aura -->
     <string name="consent_title">Data Share on this TV</string>
@@ -64,7 +45,7 @@
     <string name="dashboard_offline">OFFLINE</string>
     <string name="dashboard_paused_battery">Battery optimization is blocking background sharing</string>
     <string name="dashboard_open_settings">Open settings</string>
-    <string name="dashboard_footer_active">Stats &amp; settings — in IO Aura on your phone</string>
+    <string name="dashboard_footer_active">Stats &amp; settings — in IonTV Pulse</string>
     <string name="dashboard_footer_paused">Resumes automatically once allowed</string>
     <string name="dashboard_footer_offline">Reconnects automatically</string>
     <string name="dashboard_version" translatable="false">v%1$s</string>
@@ -77,8 +58,7 @@
     <string name="sharing_notification_channel">Data Share</string>
     <string name="sharing_notification_text">Data Share is running</string>
 
-    <!-- Ошибки входа — строкой на месте; тексты из Auth IO Aura -->
+    <!-- Ошибки — строкой на месте, попапов для них нет -->
     <string name="error_no_connection">No connection · check your network</string>
     <string name="error_server">Server is not responding · try again later</string>
-    <string name="error_google_unavailable">Google sign-in is unavailable · try email</string>
 </resources>

@@ -174,7 +174,7 @@ class SharingEngineTest : ViewModelTestCase() {
     )
 
     private suspend fun TestScope.start(engine: SharingEngine, stack: TestApiStack): Job {
-        stack.sessionStore.open(SessionTokens("tv.access", "tv.refresh", "binding"), username = "syrex")
+        stack.sessionStore.open(SessionTokens("tv.access", "tv.refresh", "binding"))
         return backgroundScope.launch { engine.run() }
     }
 

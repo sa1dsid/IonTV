@@ -206,7 +206,8 @@ fun DashboardScreen(
 @Composable
 private fun DashboardHeader(uiState: DashboardUiState) {
     val colors = IonTvTheme.colors
-    val account = uiState.username?.let { "@$it" } ?: stringResource(R.string.dashboard_your_account)
+    // ТВ привязывают по QR на сайте, и имени аккаунта бэкенд телевизору не отдаёт.
+    val account = stringResource(R.string.dashboard_your_account)
     val connection = uiState.connection.label()?.takeIf { uiState.status != SharingStatus.Offline }
     val linkedTo = stringResource(R.string.dashboard_linked_to)
 
@@ -389,7 +390,7 @@ private class RemoteKeys(private val longPressMillis: Long) {
 private fun DashboardActivePreview() {
     IonTvTheme {
         DashboardScreen(
-            uiState = DashboardUiState(username = "syrex", connection = Connection.ETHERNET),
+            uiState = DashboardUiState(connection = Connection.ETHERNET),
             onOpenSettingsClick = {},
             onLongPressOk = {},
             onKeepLinkedClick = {},
@@ -405,7 +406,6 @@ private fun DashboardPausedPreview() {
         DashboardScreen(
             uiState = DashboardUiState(
                 status = SharingStatus.Paused(PauseReason.BATTERY_OPTIMIZATION),
-                username = "syrex",
                 connection = Connection.WIFI,
             ),
             onOpenSettingsClick = {},
@@ -422,21 +422,7 @@ private fun DashboardPausedPreview() {
 private fun DashboardOfflinePreview() {
     IonTvTheme {
         DashboardScreen(
-            uiState = DashboardUiState(status = SharingStatus.Offline, username = "syrex"),
-            onOpenSettingsClick = {},
-            onLongPressOk = {},
-            onKeepLinkedClick = {},
-            onUnlinkClick = {},
-        )
-    }
-}
-
-@Preview(widthDp = 960, heightDp = 540)
-@Composable
-private fun DashboardLinkedByQrPreview() {
-    IonTvTheme {
-        DashboardScreen(
-            uiState = DashboardUiState(connection = Connection.WIFI),
+            uiState = DashboardUiState(status = SharingStatus.Offline),
             onOpenSettingsClick = {},
             onLongPressOk = {},
             onKeepLinkedClick = {},
@@ -450,7 +436,7 @@ private fun DashboardLinkedByQrPreview() {
 private fun DashboardUnlinkPreview() {
     IonTvTheme {
         DashboardScreen(
-            uiState = DashboardUiState(username = "syrex", connection = Connection.ETHERNET, confirmingUnlink = true),
+            uiState = DashboardUiState(connection = Connection.ETHERNET, confirmingUnlink = true),
             onOpenSettingsClick = {},
             onLongPressOk = {},
             onKeepLinkedClick = {},

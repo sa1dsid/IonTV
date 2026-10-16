@@ -6,8 +6,6 @@ import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
 data class DashboardUiState(
     val status: SharingStatus = SharingStatus.Active,
     val connection: Connection = Connection.NONE,
-    /** null — ТВ привязали по QR, и имени аккаунта бэкенд телевизору не отдаёт. */
-    val username: String? = null,
     /** Попап 3c после долгого нажатия OK. */
     val confirmingUnlink: Boolean = false,
     val unlinking: Boolean = false,

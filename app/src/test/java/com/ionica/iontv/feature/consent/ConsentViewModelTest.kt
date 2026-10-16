@@ -1,5 +1,6 @@
 package com.ionica.iontv.feature.consent
 
+import com.ionica.iontv.BuildConfig
 import com.ionica.iontv.core.api.Server
 import com.ionica.iontv.core.api.TestApiStack
 import com.ionica.iontv.core.session.SessionTokens
@@ -15,6 +16,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -42,10 +47,7 @@ class ConsentViewModelTest : ViewModelTestCase() {
         settle("agreed") { events.isNotEmpty() }
 
         assertEquals(listOf(ConsentEvent.Agreed(setupPending = true)), events)
-        assertEquals(
-            """{"granted":true,"version":"$CONSENT_VERSION","screen":"consent"}""",
-            stack.server.bodyOf(path),
-        )
+        assertConsentRecord(stack.server.bodyOf(path), granted = true, screen = "consent")
         assertEquals(listOf("Bearer tv.access"), stack.server.authorizationsOf(path))
         assertEquals(CONSENT_VERSION, stack.sessionStore.consentVersion())
         // Прошлый ответ сервера мог быть «нужно согласие» — раздача спрашивает его заново.
@@ -104,11 +106,11 @@ class ConsentViewModelTest : ViewModelTestCase() {
     }
 
     private suspend fun linked(stack: TestApiStack) {
-        stack.sessionStore.open(SessionTokens("tv.access", "tv.refresh", "binding"), username = null)
+        stack.sessionStore.open(SessionTokens("tv.access", "tv.refresh", "binding"))
     }
 
     private fun consent(stack: TestApiStack) = ConsentViewModel(
-        consent = ConsentRepository(stack.api, stack.sessionStore),
+        consent = ConsentRepository(stack.api, stack.sessionStore, stack.serverClock),
         setupStore = setupStore,
         sharing = sharing,
     )
@@ -116,4 +118,20 @@ class ConsentViewModelTest : ViewModelTestCase() {
 
 internal object ConsentPaths {
     fun of(deviceId: String) = "/api/v1/iontv/device/$deviceId/consent"
+}
+
+/** Запись согласия для аудита: что показали, где, когда и на каком устройстве. */
+internal fun assertConsentRecord(body: String?, granted: Boolean, screen: String) {
+    val record = Json.parseToJsonElement(checkNotNull(body)).jsonObject
+    assertEquals(granted, record.getValue("granted").jsonPrimitive.boolean)
+    assertEquals(CONSENT_VERSION, record.getValue("version").jsonPrimitive.content)
+    assertEquals(screen, record.getValue("screen").jsonPrimitive.content)
+    assertTrue(
+        record.getValue("timestamp").jsonPrimitive.content
+            .matches(Regex("""\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z""")),
+    )
+    val device = record.getValue("device_info").jsonObject
+    assertEquals(BuildConfig.VERSION_NAME, device.getValue("app_version").jsonPrimitive.content)
+    // Пустые поля (в Robolectric у Build их нет) не отправляем вовсе.
+    assertTrue(setOf("manufacturer", "model", "os_version", "app_version").containsAll(device.keys))
 }

@@ -41,9 +41,6 @@ class DashboardViewModel @Inject constructor(
         sharingController.start()
 
         viewModelScope.launch {
-            _uiState.update { it.copy(username = sessionStore.current()?.username) }
-        }
-        viewModelScope.launch {
             sharing.state.collect { state ->
                 _uiState.update { it.copy(status = state.status, connection = state.connection) }
                 if (state.status == SharingStatus.Paused(PauseReason.CONSENT_REQUIRED)) {

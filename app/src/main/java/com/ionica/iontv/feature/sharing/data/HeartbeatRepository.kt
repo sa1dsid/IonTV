@@ -5,9 +5,6 @@ import com.ionica.iontv.core.api.ServerClock
 import com.ionica.iontv.core.api.dto.HeartbeatDto
 import com.ionica.iontv.core.common.runCatchingCancellable
 import com.ionica.iontv.core.network.Connection
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
 import java.util.UUID
 import javax.inject.Inject
 
@@ -36,7 +33,7 @@ class HeartbeatRepository @Inject constructor(
             api.heartbeat(
                 HeartbeatDto(
                     eventId = UUID.randomUUID().toString(),
-                    timestamp = isoUtc(serverClock.nowMillis()),
+                    timestamp = serverClock.nowIso(),
                     batteryOk = batteryOk,
                     serviceOk = serviceOk,
                     connection = connection.apiValue(),
@@ -52,9 +49,4 @@ class HeartbeatRepository @Inject constructor(
     // Бэкенд знает только кабель и Wi-Fi; редкий ТВ на мобильном модеме считаем Wi-Fi.
     private fun Connection.apiValue(): String =
         if (this == Connection.ETHERNET) CONNECTION_ETHERNET else CONNECTION_WIFI
-
-    private fun isoUtc(millis: Long): String =
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-            .apply { timeZone = TimeZone.getTimeZone("UTC") }
-            .format(millis)
 }

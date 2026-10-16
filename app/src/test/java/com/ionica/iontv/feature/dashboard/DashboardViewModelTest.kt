@@ -6,6 +6,8 @@ import com.ionica.iontv.core.network.Connection
 import com.ionica.iontv.core.session.SessionTokens
 import com.ionica.iontv.core.system.FakeBackgroundPermissions
 import com.ionica.iontv.feature.consent.ConsentPaths
+import com.ionica.iontv.feature.consent.assertConsentRecord
+import com.ionica.iontv.feature.consent.data.ConsentRepository
 import com.ionica.iontv.feature.consent.data.CONSENT_VERSION
 import com.ionica.iontv.feature.dashboard.data.UnlinkRepository
 import com.ionica.iontv.feature.dashboard.presentation.DashboardEvent
@@ -39,16 +41,14 @@ class DashboardViewModelTest : ViewModelTestCase() {
 
     @Test
     fun `the dashboard keeps sharing running and shows its status`() = screen { stack ->
-        linked(stack, username = "syrex")
+        linked(stack)
         sharing.state.value = SharingState(SharingStatus.Active, Connection.ETHERNET)
 
         val viewModel = dashboard(stack)
-        settle("status") { viewModel.uiState.value.username != null }
+        settle("status") { viewModel.uiState.value.connection == Connection.ETHERNET }
 
         assertEquals(1, controller.starts)
         assertEquals(SharingStatus.Active, viewModel.uiState.value.status)
-        assertEquals(Connection.ETHERNET, viewModel.uiState.value.connection)
-        assertEquals("syrex", viewModel.uiState.value.username)
 
         sharing.state.value = SharingState(SharingStatus.Paused(PauseReason.BATTERY_OPTIMIZATION), Connection.WIFI)
         runCurrent()
@@ -90,10 +90,7 @@ class DashboardViewModelTest : ViewModelTestCase() {
 
         assertEquals(listOf(DashboardEvent.Unlinked), events)
         assertEquals(1, controller.stops)
-        assertEquals(
-            """{"granted":false,"version":"$CONSENT_VERSION","screen":"dashboard"}""",
-            stack.server.bodyOf(consentPath),
-        )
+        assertConsentRecord(stack.server.bodyOf(consentPath), granted = false, screen = "dashboard")
         assertEquals(listOf("Bearer tv.access"), stack.server.authorizationsOf(consentPath))
         assertEquals(listOf("Bearer tv.access"), stack.server.authorizationsOf(Paths.LOGOUT))
         assertNull(stack.sessionStore.current())
@@ -131,8 +128,8 @@ class DashboardViewModelTest : ViewModelTestCase() {
         assertNull(stack.sessionStore.consentVersion())
     }
 
-    private suspend fun linked(stack: TestApiStack, username: String? = null) {
-        stack.sessionStore.open(SessionTokens("tv.access", "tv.refresh", "binding"), username)
+    private suspend fun linked(stack: TestApiStack) {
+        stack.sessionStore.open(SessionTokens("tv.access", "tv.refresh", "binding"))
     }
 
     private fun dashboard(stack: TestApiStack) = DashboardViewModel(
@@ -140,7 +137,12 @@ class DashboardViewModelTest : ViewModelTestCase() {
         sharingController = controller,
         sessionStore = stack.sessionStore,
         permissions = permissions,
-        unlinkRepository = UnlinkRepository(stack.api, stack.sessionStore, controller),
+        unlinkRepository = UnlinkRepository(
+            api = stack.api,
+            sessionStore = stack.sessionStore,
+            consent = ConsentRepository(stack.api, stack.sessionStore, stack.serverClock),
+            sharingController = controller,
+        ),
     )
 }
 

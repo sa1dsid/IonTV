@@ -30,17 +30,17 @@ class SessionStoreTest {
 
     @Test
     fun `a linked session comes back after a restart`() = runBlocking {
-        withStore { it.open(SessionTokens("access", "refresh", "binding"), username = "syrex") }
+        withStore { it.open(SessionTokens("access", "refresh", "binding")) }
 
         val session = withStore { it.session.first() }
 
-        assertEquals(TvSession("access", "refresh", "binding", "syrex"), session)
+        assertEquals(TvSession("access", "refresh", "binding"), session)
     }
 
     @Test
     fun `closing the session forgets the tokens and the old device id`() = runBlocking {
         val deviceId = withStore { store ->
-            store.open(SessionTokens("access", "refresh", "binding"), username = null)
+            store.open(SessionTokens("access", "refresh", "binding"))
             store.deviceId().also { store.close() }
         }
 

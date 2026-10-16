@@ -40,6 +40,18 @@ data class ConsentDto(
     @SerialName("granted") val granted: Boolean,
     @SerialName("version") val version: String,
     @SerialName("screen") val screen: String,
+    /** Время на телевизоре по часам сервера; своё время получения бэкенд хранит отдельно. */
+    @SerialName("timestamp") val timestamp: String? = null,
+    @SerialName("device_info") val deviceInfo: ConsentDeviceInfoDto? = null,
+)
+
+/** Снимок устройства для аудита. Владельца бэкенд всё равно берёт из TV-сессии. */
+@Serializable
+data class ConsentDeviceInfoDto(
+    @SerialName("manufacturer") val manufacturer: String?,
+    @SerialName("model") val model: String?,
+    @SerialName("os_version") val osVersion: String?,
+    @SerialName("app_version") val appVersion: String?,
 )
 
 @Serializable

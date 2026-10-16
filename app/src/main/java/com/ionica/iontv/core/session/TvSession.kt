@@ -8,11 +8,9 @@ data class TvSession(
     val accessToken: String,
     val refreshToken: String,
     val bindingId: String?,
-    /** Имя аккаунта для «linked to @…»: есть после входа через Google или почту, после QR — нет. */
-    val username: String?,
 )
 
-/** Токены TV-сессии, как их отдают pairing/poll, devices/register и auth/refresh. */
+/** Токены TV-сессии, как их отдают pairing/poll и auth/refresh. */
 data class SessionTokens(
     val accessToken: String,
     val refreshToken: String,
