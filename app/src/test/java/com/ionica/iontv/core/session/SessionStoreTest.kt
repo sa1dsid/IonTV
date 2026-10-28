@@ -50,6 +50,19 @@ class SessionStoreTest {
         }
     }
 
+    @Test
+    fun `the account name lives with the session and goes away with it`() = runBlocking {
+        withStore { store ->
+            store.open(SessionTokens("access", "refresh", "binding"))
+            store.saveUsername("syrex")
+        }
+
+        assertEquals("syrex", withStore { it.username.first() })
+
+        withStore { it.close() }
+        assertNull(withStore { it.username.first() })
+    }
+
     private suspend fun <T> withStore(block: suspend (SessionStore) -> T): T {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         return try {

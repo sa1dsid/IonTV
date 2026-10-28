@@ -13,6 +13,7 @@ import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
 import com.ionica.iontv.testing.ViewModelTestCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -164,6 +165,23 @@ class SharingEngineTest : ViewModelTestCase() {
         assertNull(stack.sessionStore.current())
         assertEquals(1, stack.server.hits(HEARTBEAT))
     }
+
+    @Test
+    fun `the account name from the heartbeat is kept, and an answer without it keeps the old one`() =
+        screen { stack ->
+            stack.server.next(HEARTBEAT, body = """{"bound":true,"status":"active","reason":null,"interval_id":null,"username":"syrex"}""")
+            stack.server.always(HEARTBEAT, body = ACTIVE)
+            val engine = engine(stack)
+            val state = observe(engine)
+
+            start(engine, stack)
+            settle("name on the dashboard") { state()?.username == "syrex" }
+
+            engine.refresh()
+            settle("second heartbeat") { stack.server.hits(HEARTBEAT) == 2 }
+            assertEquals("syrex", stack.sessionStore.username.first())
+            assertEquals("syrex", state()?.username)
+        }
 
     private fun engine(stack: TestApiStack) = SharingEngine(
         heartbeats = HeartbeatRepository(stack.api, stack.serverClock),

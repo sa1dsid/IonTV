@@ -55,9 +55,14 @@ class SharingEngine @Inject constructor(
 
     private val refreshes = Channel<Unit>(Channel.CONFLATED)
 
-    override val state: Flow<SharingState> = combine(networkMonitor.status, batteryOk, server) { network, battery, server ->
-        SharingState(status = resolveStatus(network, battery, server), connection = network.connection)
-    }
+    override val state: Flow<SharingState> =
+        combine(networkMonitor.status, batteryOk, server, sessionStore.username) { network, battery, server, username ->
+            SharingState(
+                status = resolveStatus(network, battery, server),
+                connection = network.connection,
+                username = username,
+            )
+        }
 
     suspend fun run() = running.withLock {
         refreshes.tryReceive()
@@ -76,6 +81,7 @@ class SharingEngine @Inject constructor(
             when (outcome) {
                 is HeartbeatOutcome.Accepted -> {
                     server.value = ServerView.Answered(outcome.status, outcome.reason)
+                    outcome.username?.takeIf { it.isNotBlank() }?.let { sessionStore.saveUsername(it) }
                     awaitChange(conditions, timeout = HEARTBEAT_INTERVAL)
                 }
 

@@ -39,6 +39,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -215,7 +216,7 @@ fun DashboardScreen(
 @Composable
 private fun DashboardHeader(uiState: DashboardUiState) {
     val colors = IonTvTheme.colors
-    val account = stringResource(R.string.dashboard_your_account)
+    val account = uiState.username?.accountLabel() ?: stringResource(R.string.dashboard_your_account)
     val connection = uiState.connection.label()?.takeIf { uiState.status != SharingStatus.Offline }
     val linkedTo = stringResource(R.string.dashboard_linked_to)
 
@@ -231,9 +232,16 @@ private fun DashboardHeader(uiState: DashboardUiState) {
             text = listOfNotNull("$linkedTo $account", connection).joinToString(" · "),
             style = IonTvTheme.typography.statusMeta,
             color = colors.textTertiary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .padding(start = 24.dp)
+                .weight(1f, fill = false),
         )
     }
 }
+
+private fun String.accountLabel(): String = if (any { it.isWhitespace() }) this else "@$this"
 
 @Composable
 private fun StatusBlock(
@@ -385,7 +393,7 @@ private class RemoteKeys(private val longPressMillis: Long) {
 private fun DashboardActivePreview() {
     IonTvTheme {
         DashboardScreen(
-            uiState = DashboardUiState(connection = Connection.ETHERNET),
+            uiState = DashboardUiState(connection = Connection.ETHERNET, username = "syrex"),
             onOpenSettingsClick = {},
             onLongPressOk = {},
             onKeepLinkedClick = {},

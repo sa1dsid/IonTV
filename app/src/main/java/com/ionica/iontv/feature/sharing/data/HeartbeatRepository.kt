@@ -13,7 +13,7 @@ private const val CONNECTION_ETHERNET = "ethernet"
 private const val CONNECTION_WIFI = "wifi"
 
 sealed interface HeartbeatOutcome {
-    data class Accepted(val status: String, val reason: String?) : HeartbeatOutcome
+    data class Accepted(val status: String, val reason: String?, val username: String?) : HeartbeatOutcome
 
     data object Unbound : HeartbeatOutcome
 
@@ -38,7 +38,11 @@ class HeartbeatRepository @Inject constructor(
             )
         }.fold(
             onSuccess = { result ->
-                if (result.bound) HeartbeatOutcome.Accepted(result.status, result.reason) else HeartbeatOutcome.Unbound
+                if (result.bound) {
+                    HeartbeatOutcome.Accepted(result.status, result.reason, result.username)
+                } else {
+                    HeartbeatOutcome.Unbound
+                }
             },
             onFailure = { HeartbeatOutcome.Failed },
         )

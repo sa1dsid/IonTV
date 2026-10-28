@@ -5,6 +5,7 @@ import com.ionica.iontv.core.network.Connection
 data class SharingState(
     val status: SharingStatus,
     val connection: Connection,
+    val username: String? = null,
 )
 
 sealed interface SharingStatus {

@@ -17,4 +17,5 @@ data class HeartbeatResultDto(
     @SerialName("bound") val bound: Boolean,
     @SerialName("status") val status: String,
     @SerialName("reason") val reason: String? = null,
+    @SerialName("username") val username: String? = null,
 )

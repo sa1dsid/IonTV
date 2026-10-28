@@ -24,7 +24,9 @@ private val BINDING_ID = stringPreferencesKey("binding_id")
 
 private val CONSENT_VERSION = stringPreferencesKey("consent_version")
 
-private val SESSION_KEYS = listOf(ACCESS_TOKEN, REFRESH_TOKEN, BINDING_ID, CONSENT_VERSION)
+private val USERNAME = stringPreferencesKey("username")
+
+private val SESSION_KEYS = listOf(ACCESS_TOKEN, REFRESH_TOKEN, BINDING_ID, CONSENT_VERSION, USERNAME)
 
 @Singleton
 class SessionStore @Inject constructor(
@@ -33,6 +35,10 @@ class SessionStore @Inject constructor(
 
     val session: Flow<TvSession?> = dataStore.data
         .map { it.toSession() }
+        .distinctUntilChanged()
+
+    val username: Flow<String?> = dataStore.data
+        .map { it[USERNAME] }
         .distinctUntilChanged()
 
     @Volatile
@@ -64,6 +70,10 @@ class SessionStore @Inject constructor(
 
     suspend fun saveConsent(version: String?) {
         dataStore.edit { it.putOrRemove(CONSENT_VERSION, version) }
+    }
+
+    suspend fun saveUsername(username: String) {
+        dataStore.edit { it[USERNAME] = username }
     }
 
     suspend fun replaceTokens(tokens: SessionTokens) {

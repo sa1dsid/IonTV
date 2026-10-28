@@ -45,7 +45,9 @@ class DashboardViewModel @Inject constructor(
 
         viewModelScope.launch {
             sharing.state.collect { state ->
-                _uiState.update { it.copy(status = state.status, connection = state.connection) }
+                _uiState.update {
+                    it.copy(status = state.status, connection = state.connection, username = state.username)
+                }
                 if (state.status == SharingStatus.Paused(PauseReason.CONSENT_REQUIRED)) {
                     sessionStore.saveConsent(null)
                     eventChannel.send(DashboardEvent.ConsentRequired)

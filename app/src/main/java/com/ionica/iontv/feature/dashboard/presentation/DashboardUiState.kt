@@ -7,6 +7,7 @@ import com.ionica.iontv.feature.update.domain.model.AppUpdate
 data class DashboardUiState(
     val status: SharingStatus = SharingStatus.Active,
     val connection: Connection = Connection.NONE,
+    val username: String? = null,
     val update: AppUpdate? = null,
     val confirmingUnlink: Boolean = false,
     val unlinking: Boolean = false,

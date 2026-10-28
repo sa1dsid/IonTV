@@ -66,6 +66,18 @@ class DashboardViewModelTest : ViewModelTestCase() {
     }
 
     @Test
+    fun `the header shows the account name that came with the sharing state`() = screen { stack ->
+        linked(stack)
+        val viewModel = dashboard(stack)
+        settle("state") { viewModel.uiState.value.connection == Connection.WIFI }
+        assertNull(viewModel.uiState.value.username)
+
+        sharing.state.value = SharingState(SharingStatus.Active, Connection.WIFI, username = "syrex")
+
+        settle("name") { viewModel.uiState.value.username == "syrex" }
+    }
+
+    @Test
     fun `holding ok asks before unlinking and keep linked closes the question`() = screen { stack ->
         linked(stack)
         val viewModel = dashboard(stack)
