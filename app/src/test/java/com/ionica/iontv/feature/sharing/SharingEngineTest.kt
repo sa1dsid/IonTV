@@ -11,6 +11,7 @@ import com.ionica.iontv.feature.sharing.domain.model.PauseReason
 import com.ionica.iontv.feature.sharing.domain.model.SharingState
 import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
 import com.ionica.iontv.testing.ViewModelTestCase
+import io.proxysdk.ProxyCommand
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
@@ -34,6 +35,8 @@ class SharingEngineTest : ViewModelTestCase() {
     private val network = FakeNetworkMonitor()
 
     private val permissions = FakeBackgroundPermissions(batteryIgnored = true)
+
+    private val proxy = FakeProxyClient()
 
     @Test
     fun `a linked tv reports itself right away and then every ten minutes`() = screen { stack ->
@@ -183,11 +186,74 @@ class SharingEngineTest : ViewModelTestCase() {
             assertEquals("syrex", state()?.username)
         }
 
+    @Test
+    fun `service ok follows the proxy and its start is reported without waiting ten minutes`() =
+        screen { stack ->
+            proxy.serving.value = false
+            stack.server.always(HEARTBEAT, body = ACTIVE)
+            val engine = engine(stack)
+
+            start(engine, stack)
+            settle("first heartbeat") { stack.server.hits(HEARTBEAT) == 1 }
+            assertTrue(stack.server.bodyOf(HEARTBEAT).contains(""""service_ok":false"""))
+
+            proxy.serving.value = true
+            settle("early heartbeat") { stack.server.hits(HEARTBEAT) == 2 }
+            assertTrue(stack.server.bodiesOf(HEARTBEAT).last().contains(""""service_ok":true"""))
+        }
+
+    @Test
+    fun `a vpn on the tv pauses sharing with its own reason`() = screen { stack ->
+        stack.server.always(
+            HEARTBEAT,
+            body = """{"bound":true,"status":"paused","reason":"service_down","interval_id":null}""",
+        )
+        val engine = engine(stack)
+        val state = observe(engine)
+        start(engine, stack)
+        settle("paused") { state()?.status == SharingStatus.Paused(PauseReason.OTHER) }
+
+        proxy.stopReason.value = ProxyCommand.REASON_VPN_OR_PROXY
+
+        settle("vpn") { state()?.status == SharingStatus.Paused(PauseReason.VPN_OR_PROXY) }
+    }
+
+    @Test
+    fun `consent the backend asks for wins over the proxy's reason`() = screen { stack ->
+        proxy.stopReason.value = ProxyCommand.REASON_VPN_OR_PROXY
+        stack.server.always(
+            HEARTBEAT,
+            body = """{"bound":true,"status":"paused","reason":"consent_required","interval_id":null}""",
+        )
+        val engine = engine(stack)
+        val state = observe(engine)
+
+        start(engine, stack)
+
+        settle("consent") { state()?.status == SharingStatus.Paused(PauseReason.CONSENT_REQUIRED) }
+    }
+
+    @Test
+    fun `no proxy server for the tv pauses an otherwise active tv`() = screen { stack ->
+        stack.server.always(HEARTBEAT, body = ACTIVE)
+        val engine = engine(stack)
+        val state = observe(engine)
+        start(engine, stack)
+        settle("active") { state()?.status == SharingStatus.Active }
+
+        proxy.stopReason.value = ProxyCommand.REASON_NO_CAPACITY
+        settle("no proxy") { state()?.status == SharingStatus.Paused(PauseReason.NO_PROXY) }
+
+        proxy.stopReason.value = null
+        settle("active again") { state()?.status == SharingStatus.Active }
+    }
+
     private fun engine(stack: TestApiStack) = SharingEngine(
         heartbeats = HeartbeatRepository(stack.api, stack.serverClock),
         networkMonitor = network,
         permissions = permissions,
         sessionStore = stack.sessionStore,
+        proxy = proxy,
     )
 
     private suspend fun TestScope.start(engine: SharingEngine, stack: TestApiStack): Job {

@@ -21,5 +21,9 @@ enum class PauseReason {
 
     CONSENT_REQUIRED,
 
+    VPN_OR_PROXY,
+
+    NO_PROXY,
+
     OTHER,
 }

@@ -25,6 +25,9 @@ class SharingService : Service() {
     @Inject
     lateinit var notifications: SharingNotifications
 
+    @Inject
+    lateinit var controller: SharingController
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private var sharing: Job? = null
@@ -44,7 +47,7 @@ class SharingService : Service() {
         if (sharing?.isActive != true) {
             sharing = scope.launch {
                 engine.run()
-                stopSelf()
+                controller.stop()
             }
         }
         return START_STICKY

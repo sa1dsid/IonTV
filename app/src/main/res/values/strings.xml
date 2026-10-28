@@ -39,6 +39,8 @@
     <string name="dashboard_paused">PAUSED</string>
     <string name="dashboard_offline">OFFLINE</string>
     <string name="dashboard_paused_battery">Battery optimization is blocking background sharing</string>
+    <string name="dashboard_paused_vpn">A VPN or proxy on this TV is blocking sharing</string>
+    <string name="dashboard_paused_no_proxy">Couldn\'t connect to a sharing server</string>
     <string name="dashboard_open_settings">Open settings</string>
     <string name="dashboard_footer_active">Stats &amp; settings: IonTV Pulse</string>
     <string name="dashboard_footer_paused">Resumes automatically once allowed</string>

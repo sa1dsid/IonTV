@@ -24,6 +24,10 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven {
+            url = uri("third-party/proxy-sdk-repo")
+            content { includeGroup("io.proxysdk") }
+        }
     }
 }
 

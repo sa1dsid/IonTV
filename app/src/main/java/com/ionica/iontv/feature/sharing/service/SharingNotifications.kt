@@ -11,8 +11,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val CHANNEL_ID = "data_share"
-
 @Singleton
 class SharingNotifications @Inject constructor(
     @param:ApplicationContext private val context: Context,
@@ -44,5 +42,7 @@ class SharingNotifications @Inject constructor(
 
     companion object {
         const val NOTIFICATION_ID = 1
+
+        const val CHANNEL_ID = "data_share"
     }
 }

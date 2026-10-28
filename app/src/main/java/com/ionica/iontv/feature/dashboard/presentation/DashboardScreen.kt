@@ -342,6 +342,8 @@ private fun SharingStatus.headline(): Int = when (this) {
 @StringRes
 private fun SharingStatus.reason(): Int? = when (this) {
     SharingStatus.Paused(PauseReason.BATTERY_OPTIMIZATION) -> R.string.dashboard_paused_battery
+    SharingStatus.Paused(PauseReason.VPN_OR_PROXY) -> R.string.dashboard_paused_vpn
+    SharingStatus.Paused(PauseReason.NO_PROXY) -> R.string.dashboard_paused_no_proxy
     SharingStatus.Offline -> R.string.error_no_connection
     else -> null
 }
@@ -349,6 +351,7 @@ private fun SharingStatus.reason(): Int? = when (this) {
 @StringRes
 private fun SharingStatus.footer(): Int = when (this) {
     SharingStatus.Active -> R.string.dashboard_footer_active
+    SharingStatus.Paused(PauseReason.NO_PROXY) -> R.string.dashboard_footer_offline
     is SharingStatus.Paused -> R.string.dashboard_footer_paused
     SharingStatus.Offline -> R.string.dashboard_footer_offline
 }

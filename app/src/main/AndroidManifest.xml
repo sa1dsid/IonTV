@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature
         android:name="android.software.leanback"
@@ -55,6 +56,14 @@
                 android:value="Data Share: the TV shares part of its internet channel for partner analytics with user consent and reports its status to the IONTV backend." />
         </service>
 
+        <service
+            android:name="io.proxysdk.ProxyService"
+            tools:node="merge">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Data Share: the TV shares part of its internet connection as a proxy for partner analytics, with the user's consent." />
+        </service>
+
         <receiver
             android:name=".feature.sharing.service.BootReceiver"
             android:exported="false">
@@ -63,6 +72,10 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name="io.proxysdk.ProxyBootReceiver"
+            tools:node="remove" />
     </application>
 
 </manifest>

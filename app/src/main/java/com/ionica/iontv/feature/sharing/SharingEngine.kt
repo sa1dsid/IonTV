@@ -9,6 +9,8 @@ import com.ionica.iontv.feature.sharing.data.HeartbeatRepository
 import com.ionica.iontv.feature.sharing.domain.model.PauseReason
 import com.ionica.iontv.feature.sharing.domain.model.SharingState
 import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
+import com.ionica.iontv.feature.sharing.proxy.ProxyClient
+import io.proxysdk.ProxyCommand
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -39,12 +41,15 @@ private const val STATUS_PAUSED = "paused"
 
 private const val STATUS_OFFLINE = "offline"
 
+private val NO_PROXY_REASONS = setOf(ProxyCommand.REASON_NO_CAPACITY, ProxyCommand.REASON_CONNECT_FAILED)
+
 @Singleton
 class SharingEngine @Inject constructor(
     private val heartbeats: HeartbeatRepository,
     private val networkMonitor: NetworkMonitor,
     private val permissions: BackgroundPermissions,
     private val sessionStore: SessionStore,
+    private val proxy: ProxyClient,
 ) : SharingMonitor {
 
     private val running = Mutex()
@@ -56,9 +61,15 @@ class SharingEngine @Inject constructor(
     private val refreshes = Channel<Unit>(Channel.CONFLATED)
 
     override val state: Flow<SharingState> =
-        combine(networkMonitor.status, batteryOk, server, sessionStore.username) { network, battery, server, username ->
+        combine(
+            networkMonitor.status,
+            batteryOk,
+            server,
+            proxy.stopReason,
+            sessionStore.username,
+        ) { network, battery, server, proxyStop, username ->
             SharingState(
-                status = resolveStatus(network, battery, server),
+                status = resolveStatus(network, battery, server, proxyStop),
                 connection = network.connection,
                 username = username,
             )
@@ -75,7 +86,7 @@ class SharingEngine @Inject constructor(
 
             val outcome = heartbeats.send(
                 batteryOk = conditions.batteryOk,
-                serviceOk = true,
+                serviceOk = conditions.proxyServing,
                 connection = conditions.network.connection,
             )
             when (outcome) {
@@ -109,7 +120,11 @@ class SharingEngine @Inject constructor(
 
     private suspend fun awaitChange(sent: Conditions, timeout: Duration?) {
         val changed = suspend {
-            val conditionsChanged = merge(networkMonitor.status.map { }, ticker(LOCAL_CHECK_INTERVAL))
+            val conditionsChanged = merge(
+                networkMonitor.status.map { },
+                proxy.serving.map { },
+                ticker(LOCAL_CHECK_INTERVAL),
+            )
                 .map { readConditions() }
                 .filter { it != sent }
                 .map { }
@@ -119,7 +134,11 @@ class SharingEngine @Inject constructor(
     }
 
     private fun readConditions(): Conditions {
-        val conditions = Conditions(network = networkMonitor.current(), batteryOk = isBatteryOk())
+        val conditions = Conditions(
+            network = networkMonitor.current(),
+            batteryOk = isBatteryOk(),
+            proxyServing = proxy.isServing(),
+        )
         batteryOk.value = conditions.batteryOk
         return conditions
     }
@@ -134,24 +153,37 @@ class SharingEngine @Inject constructor(
         }
     }
 
-    private data class Conditions(val network: NetworkStatus, val batteryOk: Boolean)
+    private data class Conditions(val network: NetworkStatus, val batteryOk: Boolean, val proxyServing: Boolean)
 
     private sealed interface ServerView {
         data class Answered(val status: String, val reason: String?) : ServerView
         data object Unreachable : ServerView
     }
 
-    private fun resolveStatus(network: NetworkStatus, batteryOk: Boolean, server: ServerView?): SharingStatus =
-        when {
+    private fun resolveStatus(
+        network: NetworkStatus,
+        batteryOk: Boolean,
+        server: ServerView?,
+        proxyStop: String?,
+    ): SharingStatus {
+        val answered = server.toStatus()
+        return when {
             !network.isOnline -> SharingStatus.Offline
             !batteryOk -> SharingStatus.Paused(PauseReason.BATTERY_OPTIMIZATION)
-            server == ServerView.Unreachable -> SharingStatus.Offline
-            server is ServerView.Answered && server.status == STATUS_PAUSED ->
-                SharingStatus.Paused(server.reason.toPauseReason())
-
-            server is ServerView.Answered && server.status == STATUS_OFFLINE -> SharingStatus.Offline
+            answered == SharingStatus.Paused(PauseReason.CONSENT_REQUIRED) -> answered
+            proxyStop == ProxyCommand.REASON_VPN_OR_PROXY -> SharingStatus.Paused(PauseReason.VPN_OR_PROXY)
+            answered != null -> answered
+            proxyStop in NO_PROXY_REASONS -> SharingStatus.Paused(PauseReason.NO_PROXY)
             else -> SharingStatus.Active
         }
+    }
+
+    private fun ServerView?.toStatus(): SharingStatus? = when {
+        this == ServerView.Unreachable -> SharingStatus.Offline
+        this is ServerView.Answered && status == STATUS_PAUSED -> SharingStatus.Paused(reason.toPauseReason())
+        this is ServerView.Answered && status == STATUS_OFFLINE -> SharingStatus.Offline
+        else -> null
+    }
 
     private fun String?.toPauseReason(): PauseReason {
         val reason = this.orEmpty().lowercase()
