@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// Проверка обычно укладывается в доли секунды; без минимума заставка мигнула бы кадром.
 private const val MIN_VISIBLE_MILLIS = 600L
 
 private val RETRY_DELAYS_MILLIS = listOf(2_000L, 3_000L, 5_000L)
@@ -42,7 +41,6 @@ class SplashViewModel @Inject constructor(
         }
     }
 
-    /** По макету кнопок на заставке нет: пока сервер недоступен, повторяем сами. */
     private suspend fun awaitBackend() {
         var attempt = 0
         while (!backendHealth.isServing()) {

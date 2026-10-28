@@ -32,11 +32,6 @@ private val FieldCorner = 10.dp
 
 private val FieldMaxWidth = 492.dp
 
-/**
- * Поле ввода из макета: подпись капсом, тёмная плашка, при фокусе — светлая рамка с ореолом.
- * Ошибка по ТЗ показывается на месте: красная рамка и строка под полем.
- * Клавиатура — системная Android TV, своей не рисуем.
- */
 @Composable
 fun TvTextField(
     value: String,

@@ -23,30 +23,47 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ionica.iontv.core.designsystem.theme.IonTvTheme
 
 private const val DISABLED_ALPHA = 0.4f
 
-private val ButtonCorner = 10.dp
-
-private val ActionCorner = 7.dp
+private val ActionCorner = 8.dp
 
 enum class TvButtonTone {
-    /** Основное действие: светлая подпись. */
     NORMAL,
 
-    /** Второстепенное или разрушительное действие: приглушённая подпись. */
     MUTED,
 }
 
-/**
- * Кнопка под D-pad. Выключенная кнопка не берёт фокус: пульт её просто перескакивает,
- * как заблокированный Continue в чеклисте. Занятая ([busy]) — пока идёт её запрос —
- * выглядит выключенной, но фокус держит: иначе после ошибки OK на пульте уходило бы в никуда.
- */
+enum class TvButtonSize {
+    REGULAR,
+    LARGE,
+    COMPACT,
+}
+
+private class ButtonMetrics(
+    val textStyle: TextStyle,
+    val corner: Dp,
+    val paddingHorizontal: Dp,
+    val paddingVertical: Dp,
+    val ringOffset: Dp,
+)
+
+@Composable
+private fun TvButtonSize.metrics(): ButtonMetrics {
+    val typography = IonTvTheme.typography
+    return when (this) {
+        TvButtonSize.REGULAR -> ButtonMetrics(typography.button, 10.5.dp, 34.dp, 17.dp, FocusRingOffset)
+        TvButtonSize.LARGE -> ButtonMetrics(typography.buttonLarge, 10.5.dp, 34.dp, 17.dp, FocusRingOffset)
+        TvButtonSize.COMPACT -> ButtonMetrics(typography.buttonCompact, 7.5.dp, 22.5.dp, 11.dp, 0.dp)
+    }
+}
+
 @Composable
 fun TvButton(
     text: String,
@@ -55,17 +72,19 @@ fun TvButton(
     enabled: Boolean = true,
     busy: Boolean = false,
     tone: TvButtonTone = TvButtonTone.NORMAL,
+    size: TvButtonSize = TvButtonSize.REGULAR,
     interactionSource: MutableInteractionSource? = null,
 ) {
     val colors = IonTvTheme.colors
+    val metrics = size.metrics()
     val source = interactionSource ?: remember { MutableInteractionSource() }
     val focused by source.collectIsFocusedAsState()
     val pressed by source.collectIsPressedAsState()
-    val shape = RoundedCornerShape(ButtonCorner)
+    val shape = RoundedCornerShape(metrics.corner)
 
     Box(
         modifier = modifier
-            .focusRing(focused = focused && enabled, cornerRadius = ButtonCorner)
+            .focusRing(focused = focused && enabled, cornerRadius = metrics.corner, offset = metrics.ringOffset)
             .pressScale(pressed && !busy)
             .alpha(if (enabled && !busy) 1f else DISABLED_ALPHA)
             .clip(shape)
@@ -77,12 +96,12 @@ fun TvButton(
                 enabled = enabled,
                 onClick = { if (!busy) onClick() },
             )
-            .padding(horizontal = 32.dp, vertical = 15.dp),
+            .padding(horizontal = metrics.paddingHorizontal, vertical = metrics.paddingVertical),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
-            style = IonTvTheme.typography.button,
+            style = metrics.textStyle,
             color = when (tone) {
                 TvButtonTone.NORMAL -> colors.buttonText
                 TvButtonTone.MUTED -> colors.textSecondary
@@ -92,7 +111,6 @@ fun TvButton(
     }
 }
 
-/** Моноширинная ссылка-действие внутри строки, вроде «OPEN SETTINGS →» в чеклисте. */
 @Composable
 fun TvActionLink(
     text: String,
@@ -108,17 +126,13 @@ fun TvActionLink(
         style = IonTvTheme.typography.actionLabel,
         color = IonTvTheme.colors.link,
         modifier = modifier
-            .focusRing(focused = focused, cornerRadius = ActionCorner, offset = 2.dp)
+            .focusRing(focused = focused, cornerRadius = ActionCorner, offset = 2.5.dp)
             .clip(RoundedCornerShape(ActionCorner))
             .clickable(interactionSource = source, indication = null, onClick = onClick)
-            .padding(horizontal = 11.dp, vertical = 5.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
     )
 }
 
-/**
- * Для превью и скриншотов: ставит элементу фокус, не трогая настоящий фокус окна.
- * Событие уходит кадром позже: раньше элемент ещё не подписан на источник и его теряет.
- */
 @Composable
 internal fun rememberFocusedInteraction(): MutableInteractionSource {
     val source = remember { MutableInteractionSource() }
@@ -145,6 +159,10 @@ private fun TvButtonsPreview() {
                 )
                 TvButton(text = "Decline", onClick = {}, tone = TvButtonTone.MUTED)
                 TvButton(text = "Continue", onClick = {}, enabled = false)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(17.dp)) {
+                TvButton(text = "Continue", onClick = {}, size = TvButtonSize.LARGE)
+                TvButton(text = "Open settings", onClick = {}, size = TvButtonSize.COMPACT)
             }
             TvActionLink(
                 text = "OPEN SETTINGS →",

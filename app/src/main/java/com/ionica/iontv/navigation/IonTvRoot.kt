@@ -26,14 +26,8 @@ private object Routes {
     const val DASHBOARD = "dashboard"
 }
 
-// Экраны, где сессии ещё нет: конец сессии их не касается.
 private val SIGNED_OUT_ROUTES = setOf(Routes.SPLASH, Routes.SIGN_IN)
 
-/**
- * Поток экранов: сплэш → привязка по QR → согласие → чеклист → дашборд.
- * Шаги вперёд не оставляют истории: «Назад» с дашборда выходит из приложения, а не
- * возвращает к входу, — раздача при этом продолжается в сервисе.
- */
 @Composable
 fun IonTvRoot(
     onExit: () -> Unit,
@@ -90,7 +84,6 @@ private fun StartDestination.route(): String = when (this) {
     StartDestination.DASHBOARD -> Routes.DASHBOARD
 }
 
-/** Переход без истории: предыдущие экраны и их ViewModel закрываются. */
 private fun NavController.startOver(route: String) {
     if (currentDestination?.route == route) return
     navigate(route) {

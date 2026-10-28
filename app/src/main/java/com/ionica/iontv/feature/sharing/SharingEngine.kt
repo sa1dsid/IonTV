@@ -29,26 +29,16 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-// Ориентир бэкенд-ТЗ — heartbeat раз в 10–15 минут. Берём нижнюю границу: начисление
-// идёт по подтверждённым интервалам, и короткий интервал меньше теряет при простое.
 private val HEARTBEAT_INTERVAL = 10.minutes
 
 private val RETRY_INTERVAL = 1.minutes
 
-// Оптимизацию батареи система не присылает событием — проверяем её сами.
 private val LOCAL_CHECK_INTERVAL = 30.seconds
 
 private const val STATUS_PAUSED = "paused"
 
 private const val STATUS_OFFLINE = "offline"
 
-/**
- * Раздача трафика на телевизоре: шлёт heartbeat, пока жива TV-сессия, и собирает
- * статус для дашборда. Работает внутри SharingService.
- *
- * Модуль прокси переиспользуется из другого продукта и сюда ещё не подключён: до тех
- * пор service_ok означает, что запущен сам сервис раздачи.
- */
 @Singleton
 class SharingEngine @Inject constructor(
     private val heartbeats: HeartbeatRepository,
@@ -69,9 +59,7 @@ class SharingEngine @Inject constructor(
         SharingState(status = resolveStatus(network, battery, server), connection = network.connection)
     }
 
-    /** Возвращается, когда сессия кончилась: ТВ отвязали или бэкенд отклонил токен. */
     suspend fun run() = running.withLock {
-        // Первый heartbeat и так уходит сразу — старая просьба спросить сервер не нужна.
         refreshes.tryReceive()
         while (sessionStore.current() != null) {
             val conditions = readConditions()
@@ -113,10 +101,6 @@ class SharingEngine @Inject constructor(
         refreshes.trySend(Unit)
     }
 
-    /**
-     * Ждёт следующего heartbeat, но просыпается раньше, если пропала или вернулась сеть,
-     * сменился тип подключения или оптимизация батареи: бэкенд должен узнать об этом сразу.
-     */
     private suspend fun awaitChange(sent: Conditions, timeout: Duration?) {
         val changed = suspend {
             val conditionsChanged = merge(networkMonitor.status.map { }, ticker(LOCAL_CHECK_INTERVAL))
@@ -134,8 +118,6 @@ class SharingEngine @Inject constructor(
         return conditions
     }
 
-    // Многие телевизоры не дают снять оптимизацию батареи — экрана для этого нет. Они
-    // работают от сети, и мешать раздаче такая «оптимизация» не может.
     private fun isBatteryOk(): Boolean =
         permissions.isBatteryOptimizationIgnored() || !permissions.canRequestBatteryExemption()
 
@@ -156,7 +138,6 @@ class SharingEngine @Inject constructor(
     private fun resolveStatus(network: NetworkStatus, batteryOk: Boolean, server: ServerView?): SharingStatus =
         when {
             !network.isOnline -> SharingStatus.Offline
-            // Своё знание свежее: не ждём следующего heartbeat, чтобы показать паузу.
             !batteryOk -> SharingStatus.Paused(PauseReason.BATTERY_OPTIMIZATION)
             server == ServerView.Unreachable -> SharingStatus.Offline
             server is ServerView.Answered && server.status == STATUS_PAUSED ->

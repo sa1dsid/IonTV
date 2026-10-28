@@ -19,12 +19,6 @@ import sergio.sastre.composable.preview.scanner.android.AndroidComposablePreview
 import sergio.sastre.composable.preview.scanner.android.AndroidPreviewInfo
 import sergio.sastre.composable.preview.scanner.core.preview.ComposablePreview
 
-/**
- * Снимает каждое @Preview приложения на экране телевизора 1080p. Эталоны лежат в
- * src/test/screenshots: recordRoborazziDebug перезаписывает их, verifyRoborazziDebug
- * сверяет, compareRoborazziDebug кладёт диффы в build. В обычном testDebugUnitTest
- * снимки не делаются.
- */
 @RunWith(ParameterizedRobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = TV_1080P)
@@ -38,8 +32,6 @@ class PreviewScreenshotTest(
     @OptIn(ExperimentalRoborazziApi::class)
     @Test
     fun snapshot() {
-        // Через правило Compose бесконечные анимации в тесте выключены, а режим
-        // инспекции глушит тикающие циклы — как в превью Android Studio.
         val options = preview.toRoborazziComposeOptions()
             .builder()
             .composeTestRule(composeTestRule.asScenarioRule())
@@ -64,7 +56,6 @@ class PreviewScreenshotTest(
     }
 }
 
-// Roborazzi ждёт правило с проекцией out, а createAndroidComposeRule отдаёт точный тип.
 private typealias ActivityComposeRule =
     AndroidComposeTestRule<ActivityScenarioRule<ComponentActivity>, ComponentActivity>
 

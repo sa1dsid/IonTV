@@ -10,13 +10,11 @@ data class HealthDto(
     @SerialName("enabled") val enabled: Boolean = true,
 )
 
-/** Тело auth/refresh: у нативного клиента refresh-токен идёт в JSON, а не в cookie. */
 @Serializable
 data class TokenInputDto(
     @SerialName("token") val token: String,
 )
 
-/** Токены TV-сессии. Нативные эндпоинты IONTV отвечают в snake_case. */
 @Serializable
 data class SessionTokensDto(
     @SerialName("access_token") val accessToken: String,
@@ -31,21 +29,15 @@ fun SessionTokensDto.toTokens() = SessionTokens(
     bindingId = bindingId,
 )
 
-/**
- * Согласие на Data Share. [version] — версия показанного текста, [screen] — где дано:
- * покупатели трафика аудируют цепочку согласий, бэкенд хранит обе.
- */
 @Serializable
 data class ConsentDto(
     @SerialName("granted") val granted: Boolean,
     @SerialName("version") val version: String,
     @SerialName("screen") val screen: String,
-    /** Время на телевизоре по часам сервера; своё время получения бэкенд хранит отдельно. */
     @SerialName("timestamp") val timestamp: String? = null,
     @SerialName("device_info") val deviceInfo: ConsentDeviceInfoDto? = null,
 )
 
-/** Снимок устройства для аудита. Владельца бэкенд всё равно берёт из TV-сессии. */
 @Serializable
 data class ConsentDeviceInfoDto(
     @SerialName("manufacturer") val manufacturer: String?,

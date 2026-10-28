@@ -50,7 +50,6 @@ class ConsentViewModelTest : ViewModelTestCase() {
         assertConsentRecord(stack.server.bodyOf(path), granted = true, screen = "consent")
         assertEquals(listOf("Bearer tv.access"), stack.server.authorizationsOf(path))
         assertEquals(CONSENT_VERSION, stack.sessionStore.consentVersion())
-        // Прошлый ответ сервера мог быть «нужно согласие» — раздача спрашивает его заново.
         assertEquals(1, sharing.refreshes)
     }
 
@@ -120,7 +119,6 @@ internal object ConsentPaths {
     fun of(deviceId: String) = "/api/v1/iontv/device/$deviceId/consent"
 }
 
-/** Запись согласия для аудита: что показали, где, когда и на каком устройстве. */
 internal fun assertConsentRecord(body: String?, granted: Boolean, screen: String) {
     val record = Json.parseToJsonElement(checkNotNull(body)).jsonObject
     assertEquals(granted, record.getValue("granted").jsonPrimitive.boolean)
@@ -132,6 +130,5 @@ internal fun assertConsentRecord(body: String?, granted: Boolean, screen: String
     )
     val device = record.getValue("device_info").jsonObject
     assertEquals(BuildConfig.VERSION_NAME, device.getValue("app_version").jsonPrimitive.content)
-    // Пустые поля (в Robolectric у Build их нет) не отправляем вовсе.
     assertTrue(setOf("manufacturer", "model", "os_version", "app_version").containsAll(device.keys))
 }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,19 +36,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ionica.iontv.core.designsystem.theme.IonTvTheme
 
-/** Прозрачность экрана под попапом, как в кадрах 3b и 3c. */
 const val POPUP_BACKDROP_ALPHA = 0.3f
 
-private val PopupCorner = 17.dp
+private val PopupCorner = 18.dp
 
-private val PopupWidth = 540.dp
+private val PopupWidth = 542.dp
 
-/**
- * Попап подтверждения. По ТЗ их в приложении два, и оба — на разрушительных действиях,
- * поэтому фокус встаёт на безопасную кнопку, а «Назад» на пульте означает её же.
- * Пульт не может увести фокус из попапа на экран под ним. Пока выбранное действие
- * выполняется ([busy]), кнопки и «Назад» молчат, а фокус остаётся в попапе.
- */
+private val MessageMaxWidth = 323.dp
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TvPopup(
@@ -81,9 +77,7 @@ fun TvPopup(
                 .width(PopupWidth)
                 .background(colors.fieldSurface, shape)
                 .border(1.dp, colors.outline, shape)
-                .padding(start = 34.dp, top = 34.dp, end = 34.dp, bottom = 30.dp)
-                // Compose считает «Назад» выходом из группы фокуса, а выход здесь отменён,
-                // поэтому до BackHandler нажатие не доходит — ловим его сами.
+                .padding(start = 37.dp, top = 37.dp, end = 37.dp, bottom = 31.5.dp)
                 .onPreviewKeyEvent { event ->
                     if (event.key != Key.Back && event.key != Key.Escape) return@onPreviewKeyEvent false
                     if (event.type == KeyEventType.KeyUp && !busy) onSafeAction()
@@ -99,15 +93,16 @@ fun TvPopup(
                 color = colors.textPrimary,
                 textAlign = TextAlign.Center,
             )
-            Spacer(Modifier.height(15.dp))
+            Spacer(Modifier.height(14.5.dp))
             Text(
                 text = message,
                 style = typography.popupBody,
                 color = colors.textSecondary,
                 textAlign = TextAlign.Center,
+                modifier = Modifier.widthIn(max = MessageMaxWidth),
             )
-            Spacer(Modifier.height(27.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(15.dp)) {
+            Spacer(Modifier.height(31.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 TvButton(
                     text = safeActionText,
                     onClick = onSafeAction,

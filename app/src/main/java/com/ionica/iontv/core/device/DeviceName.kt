@@ -11,7 +11,6 @@ private const val MAX_NAME_LENGTH = 100
 
 private const val FALLBACK_NAME = "Android TV"
 
-/** Имя телевизора для списка устройств в IO Aura и Check — например «Living room TV». */
 fun interface DeviceName {
     fun get(): String
 }
@@ -21,8 +20,6 @@ class SystemDeviceName @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : DeviceName {
 
-    // Имя из настроек ТВ пользователь узнает в списке; модель — запасной вариант
-    // для приставок, где имя не задано.
     override fun get(): String {
         val userName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             Settings.Global.getString(context.contentResolver, Settings.Global.DEVICE_NAME)

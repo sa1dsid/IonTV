@@ -25,7 +25,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -33,6 +36,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -40,14 +44,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ionica.iontv.R
 import com.ionica.iontv.core.designsystem.component.TvActionLink
 import com.ionica.iontv.core.designsystem.component.TvButton
+import com.ionica.iontv.core.designsystem.component.TvButtonSize
 import com.ionica.iontv.core.designsystem.component.rememberFocusedInteraction
 import com.ionica.iontv.core.designsystem.theme.IonTvTheme
 
-private val ChecklistWidth = 689.dp
+private val ChecklistWidth = 736.dp
 
-private val BoxSize = 28.dp
+private val BoxSize = 30.dp
 
-private val BoxCorner = 7.dp
+private val BoxCorner = 8.dp
+
+private val DoneLetterSpacing = 1.3.sp
 
 @Composable
 fun SetupRoute(
@@ -88,7 +95,6 @@ fun SetupScreen(
     val autostartFocus = remember { FocusRequester() }
     val continueFocus = remember { FocusRequester() }
 
-    // Выполненный шаг прячет свою кнопку — фокус уходит на следующее несделанное.
     LaunchedEffect(uiState.backgroundActivityDone, uiState.autostartDone) {
         when {
             !uiState.backgroundActivityDone -> backgroundFocus.requestFocus()
@@ -101,7 +107,7 @@ fun SetupScreen(
         modifier = modifier
             .fillMaxSize()
             .background(colors.background)
-            .padding(horizontal = 79.dp, vertical = 54.dp),
+            .padding(horizontal = 85.dp, vertical = 54.dp),
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
@@ -109,7 +115,7 @@ fun SetupScreen(
             style = IonTvTheme.typography.title,
             color = colors.textPrimary,
         )
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(21.dp))
 
         Column(modifier = Modifier.widthIn(max = ChecklistWidth)) {
             ChecklistRow(
@@ -118,12 +124,6 @@ fun SetupScreen(
                 onOpenSettings = { onOpenSettingsClick(SetupStep.BACKGROUND_ACTIVITY) },
                 focusRequester = backgroundFocus,
                 interactionSource = actionInteraction.takeUnless { uiState.backgroundActivityDone },
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(colors.divider),
             )
             ChecklistRow(
                 label = stringResource(R.string.setup_autostart),
@@ -134,11 +134,12 @@ fun SetupScreen(
             )
         }
 
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(34.dp))
         TvButton(
             text = stringResource(R.string.setup_continue),
             onClick = onContinueClick,
             enabled = uiState.canContinue,
+            size = TvButtonSize.LARGE,
             modifier = Modifier.focusRequester(continueFocus),
             interactionSource = actionInteraction.takeIf { uiState.canContinue },
         )
@@ -159,11 +160,19 @@ private fun ChecklistRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 17.dp),
+            .drawBehind {
+                val line = 1.dp.toPx()
+                drawRect(
+                    color = colors.divider,
+                    topLeft = Offset(0f, size.height - line),
+                    size = Size(size.width, line),
+                )
+            }
+            .padding(vertical = 18.5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CheckMark(done = done)
-        Spacer(Modifier.width(16.dp))
+        Spacer(Modifier.width(17.dp))
         Text(
             text = label,
             style = typography.label,
@@ -173,7 +182,7 @@ private fun ChecklistRow(
         if (done) {
             Text(
                 text = stringResource(R.string.setup_done),
-                style = typography.actionLabel,
+                style = typography.actionLabel.copy(letterSpacing = DoneLetterSpacing),
                 color = colors.success,
             )
         } else {
@@ -187,7 +196,6 @@ private fun ChecklistRow(
     }
 }
 
-/** Галка только показывает состояние: тыкать в неё нельзя, её ставит проверка системы. */
 @Composable
 private fun CheckMark(done: Boolean) {
     val colors = IonTvTheme.colors
@@ -200,8 +208,7 @@ private fun CheckMark(done: Boolean) {
         contentAlignment = Alignment.Center,
     ) {
         if (done) {
-            Canvas(modifier = Modifier.size(14.dp)) {
-                // Галка из макета: путь «M4 12.5 10 18.5 20 6.5» в поле 24×24.
+            Canvas(modifier = Modifier.size(16.dp)) {
                 val unit = size.width / 24f
                 val tick = Path().apply {
                     moveTo(4f * unit, 12.5f * unit)

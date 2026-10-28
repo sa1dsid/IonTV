@@ -6,20 +6,14 @@ import kotlinx.serialization.Serializable
 
 private const val STATUS_PAIRED = "paired"
 
-// По ТЗ ТВ спрашивает статус привязки раз в 2 секунды; сервер присылает то же число.
 private const val DEFAULT_POLL_INTERVAL_SECONDS = 2L
 
-/** Тело pairing/code: какой телевизор привязываем и как он будет называться в кабинете. */
 @Serializable
 data class DeviceDto(
     @SerialName("device_id") val deviceId: String,
     @SerialName("name") val name: String,
 )
 
-/**
- * [qrUrl] — ссылка на сайт с одноразовым токеном, её и рисуем в QR; адрес сайта сервер
- * берёт из своего конфига. [code] — запасной ручной ввод. [pollToken] не показываем.
- */
 @Serializable
 data class PairingCodeDto(
     @SerialName("pair_id") val pairId: String,
@@ -36,7 +30,6 @@ data class PairingPollRequestDto(
     @SerialName("poll_token") val pollToken: String,
 )
 
-/** pending — на сайте ещё не подтвердили; paired — привязали, в ответе токены TV-сессии. */
 @Serializable
 data class PairingPollDto(
     @SerialName("status") val status: String,

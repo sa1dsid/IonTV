@@ -13,10 +13,6 @@ import javax.inject.Singleton
 
 private const val CHANNEL_ID = "data_share"
 
-/**
- * Уведомление foreground-сервиса. Телевизоры их почти не показывают, но без него
- * система не даст сервису жить в фоне.
- */
 @Singleton
 class SharingNotifications @Inject constructor(
     @param:ApplicationContext private val context: Context,

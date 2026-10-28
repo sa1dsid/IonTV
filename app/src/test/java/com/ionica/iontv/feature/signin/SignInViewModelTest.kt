@@ -38,7 +38,6 @@ class SignInViewModelTest : ViewModelTestCase() {
         val viewModel = signIn(stack)
         settle("pairing") { viewModel.uiState.value.pairing is PairingUi.Ready }
 
-        // Регистр в коде не важен, показываем заглавными — как в макете.
         assertEquals(PairingUi.Ready(code = "7K2M4Q", qrContent = QR_URL), viewModel.uiState.value.pairing)
         val deviceId = stack.sessionStore.deviceId()
         assertEquals(

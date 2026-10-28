@@ -6,10 +6,6 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import okhttp3.mockwebserver.SocketPolicy
 
-/**
- * MockWebServer с ответами по путям: [next] — разовый ответ (очередь), [always] —
- * постоянный. На незаглушенный путь отвечает 404, чтобы тест не висел.
- */
 internal class RoutingApiServer {
 
     private val replies = mutableMapOf<String, ArrayDeque<MockResponse>>()

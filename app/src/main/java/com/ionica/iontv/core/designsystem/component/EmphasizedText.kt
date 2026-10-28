@@ -9,10 +9,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.fromHtml
 
-/**
- * Строка ресурса с выделениями: участки в &lt;b&gt; получают [emphasis]. Так переводчик
- * видит фразу целиком, а не обрывки вокруг выделенных слов.
- */
 @Composable
 fun emphasizedString(@StringRes id: Int, emphasis: SpanStyle): AnnotatedString {
     val html = stringResource(id)

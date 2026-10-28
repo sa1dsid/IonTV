@@ -19,17 +19,11 @@ private val SETUP_COMPLETED = booleanPreferencesKey("setup_completed")
 @Retention(AnnotationRetention.BINARY)
 annotation class DevicePreferences
 
-/**
- * Настройки самого телевизора, а не аккаунта: переживают отвязку, и при повторной
- * привязке чеклист не просит сделать то же самое ещё раз.
- */
 @Singleton
 class DeviceSetupStore @Inject constructor(
     @param:DevicePreferences private val dataStore: DataStore<Preferences>,
 ) {
 
-    // Три флага читаются на каждом возврате на экран — держим их в памяти, а диск
-    // трогаем только при записи.
     @Volatile
     private var cached: Preferences? = null
 

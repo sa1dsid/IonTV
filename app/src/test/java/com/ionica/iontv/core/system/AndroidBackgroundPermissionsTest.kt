@@ -24,7 +24,6 @@ class AndroidBackgroundPermissionsTest {
 
     @Test
     fun `a tv that hands battery settings to a stub has no exemption screen`() {
-        // Так ведут себя Android TV и Google TV: экран объявлен, но это заглушка.
         handle(requestExemption(), activity = "com.android.tv.settings.EmptyStubActivity")
         handle(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS), activity = "com.android.tv.settings.EmptyStubActivity")
 

@@ -39,10 +39,6 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +51,7 @@ import com.ionica.iontv.R
 import com.ionica.iontv.core.designsystem.component.IonTvLogo
 import com.ionica.iontv.core.designsystem.component.POPUP_BACKDROP_ALPHA
 import com.ionica.iontv.core.designsystem.component.TvButton
+import com.ionica.iontv.core.designsystem.component.TvButtonSize
 import com.ionica.iontv.core.designsystem.component.TvPopup
 import com.ionica.iontv.core.designsystem.component.rememberFocusedInteraction
 import com.ionica.iontv.core.designsystem.theme.IonTvTheme
@@ -63,18 +60,15 @@ import com.ionica.iontv.feature.sharing.domain.model.PauseReason
 import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
 import kotlinx.coroutines.delay
 
-// Сколько держать OK, чтобы открылась отвязка: дольше системного long press,
-// чтобы случайное нажатие на пульте не роняло попап.
 private const val LONG_PRESS_MILLIS = 800L
 
-// ТЗ: «после ~1 минуты бездействия экран гаснет» — защита OLED от выгорания.
 internal const val AMBIENT_AFTER_MILLIS = 60_000L
 
 internal const val DASHBOARD_TAG = "dashboard"
 
-private val StatusDotSize = 16.dp
+private val StatusDotSize = 10.dp
 
-private val StatusDotGlow = 17.dp
+private val StatusDotGlow = 9.dp
 
 @Composable
 fun DashboardRoute(
@@ -106,7 +100,6 @@ fun DashboardRoute(
     )
 }
 
-/** Кадры 5a–5c и попап 3c. Статистика и настройки — в IO Aura на телефоне, здесь только статус. */
 @Composable
 fun DashboardScreen(
     uiState: DashboardUiState,
@@ -124,23 +117,17 @@ fun DashboardScreen(
     var ambient by remember { mutableStateOf(false) }
     var lastInput by remember { mutableIntStateOf(0) }
 
-    // Минута без пульта — экран гаснет до строки статуса. Попап отвязки ждёт ответа
-    // и в ambient не уходит.
     LaunchedEffect(lastInput, uiState.confirmingUnlink) {
         if (uiState.confirmingUnlink) return@LaunchedEffect
         delay(AMBIENT_AFTER_MILLIS)
         ambient = true
     }
 
-    // На ACTIVE и OFFLINE кнопок нет, а в ambient их нет нигде, но пульт должен
-    // попадать в экран — иначе не поймать долгое OK и не разбудить дашборд. Когда кнопка
-    // есть, сам экран фокус не берёт: «Назад» с кнопки ушёл бы на него, а не из приложения.
     val buttonOnScreen = !ambient && uiState.status.hasSettingsButton()
     LaunchedEffect(uiState.confirmingUnlink, buttonOnScreen) {
         if (!uiState.confirmingUnlink && !buttonOnScreen) rootFocus.requestFocus()
     }
 
-    // С Android 16 «Назад» приходит не клавишей, а системным жестом — будим и им.
     BackHandler(enabled = ambient) { ambient = false }
 
     Box(
@@ -150,7 +137,6 @@ fun DashboardScreen(
             .onPreviewKeyEvent { event ->
                 lastInput++
                 if (remote.swallowsTail(event.nativeKeyEvent)) return@onPreviewKeyEvent true
-                // Любая кнопка будит дашборд, но сама никуда дальше не нажимается.
                 if (ambient) {
                     if (event.type == KeyEventType.KeyDown) {
                         ambient = false
@@ -206,7 +192,6 @@ fun DashboardScreen(
 @Composable
 private fun DashboardHeader(uiState: DashboardUiState) {
     val colors = IonTvTheme.colors
-    // ТВ привязывают по QR на сайте, и имени аккаунта бэкенд телевизору не отдаёт.
     val account = stringResource(R.string.dashboard_your_account)
     val connection = uiState.connection.label()?.takeIf { uiState.status != SharingStatus.Offline }
     val linkedTo = stringResource(R.string.dashboard_linked_to)
@@ -214,20 +199,13 @@ private fun DashboardHeader(uiState: DashboardUiState) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 49.dp, top = 30.dp, end = 49.dp),
+            .padding(start = 37.dp, top = 30.dp, end = 37.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IonTvLogo(fontSize = 22.sp)
+        IonTvLogo(fontSize = 15.sp)
         Text(
-            text = buildAnnotatedString {
-                append(linkedTo)
-                append(" ")
-                withStyle(SpanStyle(color = colors.textEmphasis, fontWeight = FontWeight.Medium)) {
-                    append(account)
-                }
-                connection?.let { append(" · $it") }
-            },
+            text = listOfNotNull("$linkedTo $account", connection).joinToString(" · "),
             style = IonTvTheme.typography.statusMeta,
             color = colors.textTertiary,
         )
@@ -248,7 +226,6 @@ private fun StatusBlock(
     val accent = if (active) colors.success else colors.danger
     val settingsFocus = remember { FocusRequester() }
 
-    // И после закрытия попапа: его кнопки уходят вместе с фокусом.
     LaunchedEffect(status, popupOpen) {
         if (status.hasSettingsButton() && !popupOpen) settingsFocus.requestFocus()
     }
@@ -262,7 +239,7 @@ private fun StatusBlock(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             StatusDot(color = accent)
-            Spacer(Modifier.width(17.dp))
+            Spacer(Modifier.width(15.dp))
             Text(
                 text = stringResource(status.headline()),
                 style = typography.statusHeadline,
@@ -270,14 +247,15 @@ private fun StatusBlock(
             )
         }
         status.reason()?.let { reason ->
-            Spacer(Modifier.height(17.dp))
+            Spacer(Modifier.height(9.dp))
             Text(text = stringResource(reason), style = typography.statusReason, color = colors.textSecondary)
         }
         if (status.hasSettingsButton()) {
-            Spacer(Modifier.height(27.dp))
+            Spacer(Modifier.height(16.5.dp))
             TvButton(
                 text = stringResource(R.string.dashboard_open_settings),
                 onClick = onOpenSettingsClick,
+                size = TvButtonSize.COMPACT,
                 modifier = Modifier.focusRequester(settingsFocus),
                 interactionSource = settingsInteraction,
             )
@@ -290,17 +268,20 @@ private fun DashboardFooter(status: SharingStatus) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 49.dp, end = 49.dp, bottom = 27.dp),
+            .padding(start = 37.dp, end = 37.dp, bottom = 31.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Bottom,
     ) {
         val style = IonTvTheme.typography.footer
-        val color = IonTvTheme.colors.textTertiary
-        Text(text = stringResource(status.footer()), style = style, color = color)
+        val color = IonTvTheme.colors.textFooter
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = stringResource(status.footer()), style = style, color = color)
+            Text(text = stringResource(R.string.dashboard_footer_back), style = style, color = color)
+        }
         Text(text = stringResource(R.string.dashboard_version, BuildConfig.VERSION_NAME), style = style, color = color)
     }
 }
 
-/** Точка статуса с ореолом того же цвета, как box-shadow в макете. */
 @Composable
 private fun StatusDot(color: Color) {
     Canvas(modifier = Modifier.size(StatusDotSize)) {
@@ -348,14 +329,6 @@ private fun Connection.label(): String? = when (this) {
     Connection.OTHER, Connection.NONE -> null
 }
 
-/**
- * Пульт на дашборде. Долгое OK считаем по времени удержания: пульт присылает повторы
- * нажатия, и первый повтор после порога открывает отвязку.
- *
- * Нажатие, которое уже сработало (открыло отвязку или разбудило экран), доедаем
- * до отпускания: Compose нажимает кнопку в фокусе на отпускание OK, и без этого
- * отпускание сразу нажало бы «Keep linked» в попапе или «Open settings».
- */
 private class RemoteKeys(private val longPressMillis: Long) {
 
     private var swallowedKey: Int? = null
@@ -366,7 +339,6 @@ private class RemoteKeys(private val longPressMillis: Long) {
 
     fun swallowsTail(event: android.view.KeyEvent): Boolean {
         if (event.keyCode != swallowedKey) return false
-        // Новое нажатие той же кнопки: отпускание прошлого потерялось, не держим его.
         if (event.action == android.view.KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
             swallowedKey = null
             return false

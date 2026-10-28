@@ -31,7 +31,6 @@ class SessionStore @Inject constructor(
     @param:SessionPreferences private val dataStore: DataStore<Preferences>,
 ) {
 
-    /** Единственный источник правды о том, привязан ли телевизор. */
     val session: Flow<TvSession?> = dataStore.data
         .map { it.toSession() }
         .distinctUntilChanged()
@@ -53,7 +52,6 @@ class SessionStore @Inject constructor(
         return cached
     }
 
-    /** Для перехватчиков OkHttp: они работают на потоке запроса и не умеют приостанавливаться. */
     fun blockingCurrent(): TvSession? = if (loaded) cached else runBlocking { current() }
 
     suspend fun open(tokens: SessionTokens) {
@@ -62,25 +60,18 @@ class SessionStore @Inject constructor(
         loaded = true
     }
 
-    /** Версия текста, на который пользователь согласился; у каждой привязки — своё согласие. */
     suspend fun consentVersion(): String? = dataStore.data.first()[CONSENT_VERSION]
 
     suspend fun saveConsent(version: String?) {
         dataStore.edit { it.putOrRemove(CONSENT_VERSION, version) }
     }
 
-    /** Бэкенд меняет refresh-токен при каждом обновлении: старый после этого недействителен. */
     suspend fun replaceTokens(tokens: SessionTokens) {
         val preferences = dataStore.edit { it.putTokens(tokens) }
         cached = preferences.toSession()
         loaded = true
     }
 
-    /**
-     * Сессия закончилась: телевизор отвязали, бэкенд отклонил refresh-токен или
-     * пользователь сам отвязал ТВ. device_id выдаётся новый — старая привязка на
-     * бэкенде может пережить сессию, и с прежним id повторная привязка упёрлась бы в 409.
-     */
     suspend fun close() {
         val deviceId = UUID.randomUUID().toString()
         dataStore.edit { preferences ->
@@ -92,7 +83,6 @@ class SessionStore @Inject constructor(
         cachedDeviceId = deviceId
     }
 
-    /** Постоянный UUID телевизора: создаётся при первом запуске и живёт до конца сессии. */
     suspend fun deviceId(): String {
         cachedDeviceId?.let { return it }
 

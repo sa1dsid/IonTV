@@ -9,10 +9,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
-/**
- * viewModelScope живёт на Main: подменяем его тестовым диспетчером, чтобы задержки
- * ViewModel шли в виртуальном времени runTest.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainDispatcherRule(
     val dispatcher: TestDispatcher = StandardTestDispatcher(),

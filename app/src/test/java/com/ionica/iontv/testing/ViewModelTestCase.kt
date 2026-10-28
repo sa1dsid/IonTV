@@ -21,10 +21,6 @@ private const val POLL_MILLIS = 2L
 
 private const val AWAIT_MILLIS = 5_000L
 
-/**
- * Основа тестов экранов: настоящий сетевой стек против MockWebServer, настоящий
- * DataStore во временной папке и виртуальное время для задержек ViewModel.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class ViewModelTestCase {
 
@@ -50,8 +46,6 @@ abstract class ViewModelTestCase {
                 timeSource = TimeSource { testScheduler.currentTime },
             )
             try {
-                // Прогреваем кэш хранилища: дальше ViewModel читает его без настоящего I/O,
-                // и виртуальное время не обгоняет диск.
                 stack.sessionStore.current()
                 stack.sessionStore.deviceId()
                 body(stack)
@@ -62,14 +56,9 @@ abstract class ViewModelTestCase {
 
     internal fun preferences(name: String) = preferencesIn(folder.root, name, storeScope)
 
-    /**
-     * Ждёт условия, не двигая виртуальное время. Ошибку запроса Retrofit возвращает
-     * в корутину через Dispatchers.Default, поэтому её приходится ждать по-настоящему.
-     */
     protected fun TestScope.settle(what: String, condition: () -> Boolean) =
         awaitReal(what, condition) { runCurrent() }
 
-    /** То же, но с прокруткой виртуального времени: задержки и повторы проходят сразу. */
     protected fun TestScope.settleIdle(what: String, condition: () -> Boolean) =
         awaitReal(what, condition) { advanceUntilIdle() }
 

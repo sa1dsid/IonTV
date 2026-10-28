@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Только телевизоры и приставки: сенсорный экран не нужен, управление — пульт. -->
     <uses-feature
         android:name="android.software.leanback"
         android:required="true" />
@@ -16,8 +15,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!-- Чеклист проверяет, есть ли на устройстве экран снятия оптимизации батареи:
-         без этих записей Android 11+ не покажет системные экраны настроек. -->
     <queries>
         <intent>
             <action android:name="android.settings.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
@@ -28,8 +25,6 @@
         </intent>
     </queries>
 
-    <!-- Бэкап выключен: токены сессии и device_id привязаны к конкретному телевизору,
-         восстановленные на другом устройстве, они выдали бы его за этот. -->
     <application
         android:name=".IonTvApp"
         android:allowBackup="false"
@@ -51,8 +46,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Раздача трафика круглые сутки. specialUse: ни один стандартный тип не подходит,
-             а dataSync на Android 15 ограничен шестью часами и не стартует после загрузки. -->
         <service
             android:name=".feature.sharing.service.SharingService"
             android:exported="false"

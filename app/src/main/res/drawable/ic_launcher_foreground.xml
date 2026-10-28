@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Планета из вордмарка в безопасной зоне адаптивной иконки (66 из 108 dp). -->
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
     android:drawable="@drawable/img_planet"
     android:inset="21dp" />

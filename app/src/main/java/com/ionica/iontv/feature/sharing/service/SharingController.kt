@@ -9,7 +9,6 @@ import javax.inject.Singleton
 
 interface SharingController {
 
-    /** Повторный запуск безопасен: сервис не заводит второй цикл heartbeat. */
     fun start()
 
     fun stop()

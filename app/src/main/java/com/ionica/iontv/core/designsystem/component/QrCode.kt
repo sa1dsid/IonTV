@@ -21,8 +21,6 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import com.ionica.iontv.core.designsystem.theme.IonTvTheme
 import kotlin.math.floor
 
-// В макете модули упираются в край плашки, но телефону нужна светлая рамка вокруг кода:
-// на чёрном фоне телевизора без неё сканер путает край экрана с угловыми метками.
 private const val QUIET_ZONE_MODULES = 2
 
 @Composable
@@ -41,7 +39,6 @@ fun QrCode(
             .clearAndSetSemantics { }
             .drawWithCache {
                 val cells = matrix.width + QUIET_ZONE_MODULES * 2
-                // Целые пиксели на модуль: иначе между соседними модулями видны швы.
                 val module = floor(this.size.minDimension / cells)
                 val origin = (this.size.minDimension - module * matrix.width) / 2f
                 val modules = Path().apply {

@@ -47,7 +47,6 @@ class ConsentViewModel @Inject constructor(
         }
     }
 
-    /** «Назад» на экране согласия — тоже отказ: без него дальше не пускаем. */
     fun onDeclineClick() {
         _uiState.update { it.copy(declining = true) }
     }

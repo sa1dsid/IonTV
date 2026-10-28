@@ -24,26 +24,27 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ionica.iontv.R
+import com.ionica.iontv.core.designsystem.component.IonTvLogo
 import com.ionica.iontv.core.designsystem.component.POPUP_BACKDROP_ALPHA
 import com.ionica.iontv.core.designsystem.component.QrCode
 import com.ionica.iontv.core.designsystem.component.TvButton
-import com.ionica.iontv.core.designsystem.component.TvButtonTone
 import com.ionica.iontv.core.designsystem.component.TvPopup
 import com.ionica.iontv.core.designsystem.component.emphasizedString
 import com.ionica.iontv.core.designsystem.component.rememberFocusedInteraction
 import com.ionica.iontv.core.designsystem.theme.IonTvTheme
 
-private val TextMaxWidth = 738.dp
+private val TextMaxWidth = 620.dp
 
-private val LegalQrSize = 78.dp
+private val LegalQrSize = 60.dp
 
-private val LegalQrCorner = 7.dp
+private val ScanHintMaxWidth = 152.dp
 
 @Composable
 fun ConsentRoute(
@@ -73,10 +74,6 @@ fun ConsentRoute(
     )
 }
 
-/**
- * Кадры 3 и 3b. Длинные документы на телевизоре не открываем: мини-QR ведёт на единую
- * страницу Terms/Privacy экосистемы, её читают с телефона.
- */
 @Composable
 fun ConsentScreen(
     uiState: ConsentUiState,
@@ -94,7 +91,6 @@ fun ConsentScreen(
 
     BackHandler(enabled = !uiState.declining, onBack = onDeclineClick)
 
-    // Попап закрылся — его кнопок больше нет, и фокус возвращается на согласие.
     LaunchedEffect(uiState.declining) {
         if (!uiState.declining) agreeFocus.requestFocus()
     }
@@ -104,55 +100,72 @@ fun ConsentScreen(
             .fillMaxSize()
             .background(colors.background),
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .alpha(if (uiState.declining) POPUP_BACKDROP_ALPHA else 1f)
-                .padding(horizontal = 79.dp, vertical = 54.dp),
-            verticalArrangement = Arrangement.Center,
+                .alpha(if (uiState.declining) POPUP_BACKDROP_ALPHA else 1f),
         ) {
-            Text(
-                text = stringResource(R.string.consent_title),
-                style = typography.title,
-                color = colors.textPrimary,
+            IonTvLogo(
+                fontSize = 15.sp,
+                modifier = Modifier.padding(start = 37.dp, top = 30.dp),
             )
-            Spacer(Modifier.height(20.dp))
-            Text(
-                text = stringResource(R.string.consent_text),
-                style = typography.body,
-                color = colors.textSecondary,
-                modifier = Modifier.widthIn(max = TextMaxWidth),
-            )
-            Spacer(Modifier.height(32.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(17.dp)) {
-                TvButton(
-                    text = stringResource(R.string.consent_agree),
-                    onClick = onAgreeClick,
-                    busy = uiState.submitting,
-                    modifier = Modifier.focusRequester(agreeFocus),
-                    interactionSource = agreeInteraction,
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 37.dp, vertical = 54.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = stringResource(R.string.consent_title),
+                    style = typography.consentTitle,
+                    color = colors.textPrimary,
                 )
-                TvButton(
-                    text = stringResource(R.string.consent_decline),
-                    onClick = onDeclineClick,
-                    tone = TvButtonTone.MUTED,
-                )
-            }
-            uiState.error?.let { error ->
                 Spacer(Modifier.height(15.dp))
                 Text(
-                    text = stringResource(
-                        when (error) {
-                            ConsentError.NO_CONNECTION -> R.string.error_no_connection
-                            ConsentError.SERVER -> R.string.error_server
-                        }
-                    ),
-                    style = typography.statusReason,
-                    color = colors.danger,
+                    text = stringResource(R.string.consent_text),
+                    style = typography.consentBody,
+                    color = colors.textBody,
+                    modifier = Modifier.widthIn(max = TextMaxWidth),
                 )
+                Spacer(Modifier.height(34.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(18.5.dp)) {
+                    TvButton(
+                        text = stringResource(R.string.consent_agree),
+                        onClick = onAgreeClick,
+                        busy = uiState.submitting,
+                        modifier = Modifier.focusRequester(agreeFocus),
+                        interactionSource = agreeInteraction,
+                    )
+                    TvButton(
+                        text = stringResource(R.string.consent_decline),
+                        onClick = onDeclineClick,
+                    )
+                }
+                uiState.error?.let { error ->
+                    Spacer(Modifier.height(15.dp))
+                    Text(
+                        text = stringResource(
+                            when (error) {
+                                ConsentError.NO_CONNECTION -> R.string.error_no_connection
+                                ConsentError.SERVER -> R.string.error_server
+                            }
+                        ),
+                        style = typography.statusReason,
+                        color = colors.danger,
+                    )
+                }
+                Spacer(Modifier.height(25.5.dp))
+                Text(
+                    text = emphasizedString(
+                        R.string.consent_legal,
+                        SpanStyle(color = colors.textPrimary, fontWeight = FontWeight.SemiBold),
+                    ),
+                    style = typography.legal,
+                    color = colors.textBody,
+                )
+                Spacer(Modifier.height(28.5.dp))
+                LegalLinks()
             }
-            Spacer(Modifier.height(32.dp))
-            LegalFooter()
         }
 
         if (uiState.declining) {
@@ -170,27 +183,30 @@ fun ConsentScreen(
 }
 
 @Composable
-private fun LegalFooter() {
-    val colors = IonTvTheme.colors
-    val legalUrl = stringResource(R.string.legal_url)
-    val terms = emphasizedString(R.string.consent_legal, SpanStyle(color = colors.link))
-    val scan = stringResource(R.string.consent_legal_scan, legalUrl.substringAfter("://"))
-
+private fun LegalLinks() {
     Row(
-        modifier = Modifier.widthIn(max = TextMaxWidth),
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalArrangement = Arrangement.spacedBy(25.5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        QrCode(content = legalUrl, size = LegalQrSize, cornerRadius = LegalQrCorner)
+        LegalLink(label = stringResource(R.string.consent_terms), url = stringResource(R.string.terms_url))
+        LegalLink(label = stringResource(R.string.consent_privacy), url = stringResource(R.string.privacy_url))
         Text(
-            text = buildAnnotatedString {
-                append(terms)
-                append("\n")
-                append(scan)
-            },
+            text = stringResource(R.string.consent_legal_scan),
             style = IonTvTheme.typography.legal,
-            color = colors.textTertiary,
+            color = IonTvTheme.colors.textSecondary,
+            modifier = Modifier.widthIn(max = ScanHintMaxWidth),
         )
+    }
+}
+
+@Composable
+private fun LegalLink(label: String, url: String) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        QrCode(content = url, size = LegalQrSize, cornerRadius = 0.dp)
+        Text(text = label, style = IonTvTheme.typography.legalLabel, color = IonTvTheme.colors.textPrimary)
     }
 }
 
