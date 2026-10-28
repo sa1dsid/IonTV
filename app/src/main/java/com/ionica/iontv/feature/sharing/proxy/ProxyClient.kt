@@ -29,6 +29,8 @@ interface ProxyClient {
     fun start()
 
     fun stop()
+
+    suspend fun disconnect()
 }
 
 @Singleton
@@ -55,6 +57,10 @@ class SdkProxyClient @Inject constructor(
     override fun start() = ProxySdk.start(context)
 
     override fun stop() = ProxySdk.stop(context)
+
+    override suspend fun disconnect() {
+        ProxySdk.disconnect()
+    }
 
     private fun notification() = ProxyNotification(
         smallIcon = R.drawable.ic_notification,

@@ -14,3 +14,8 @@ data class ProxyHeartbeatDto(
     @SerialName("proxy_version") val proxyVersion: String,
     @SerialName("proxy_versions") val proxyVersions: List<String>,
 )
+
+@Serializable
+data class ProxyDisconnectedDto(
+    @SerialName("disconnected") val disconnected: Boolean,
+)

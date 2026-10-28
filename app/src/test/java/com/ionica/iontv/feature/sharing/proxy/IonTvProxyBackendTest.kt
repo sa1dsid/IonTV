@@ -13,6 +13,8 @@ import org.junit.Test
 
 private const val PROXY_HEARTBEAT = "/api/v1/iontv/tv/proxy/heartbeat"
 
+private const val PROXY_DISCONNECT = "/api/v1/iontv/tv/proxy/disconnect"
+
 private const val CERT = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
 
 class IonTvProxyBackendTest : ApiTestCase() {
@@ -88,6 +90,33 @@ class IonTvProxyBackendTest : ApiTestCase() {
 
         stack.sessionStore.close()
         assertFalse(backend.isSignedIn())
+    }
+
+    @Test
+    fun `disconnect takes the proxy away with the tv session and an empty body`() = api { stack ->
+        stack.linked(access = "tv.access")
+        stack.server.next(PROXY_DISCONNECT, body = """{"disconnected":true}""")
+
+        assertTrue(backend(stack).disconnect())
+
+        assertEquals(listOf("Bearer tv.access"), stack.server.authorizationsOf(PROXY_DISCONNECT))
+        assertEquals("", stack.server.bodyOf(PROXY_DISCONNECT))
+    }
+
+    @Test
+    fun `a proxy that was already gone is a done disconnect too`() = api { stack ->
+        stack.linked()
+        stack.server.next(PROXY_DISCONNECT, body = """{"disconnected":false}""")
+
+        assertTrue(backend(stack).disconnect())
+    }
+
+    @Test
+    fun `a failed disconnect does not throw`() = api { stack ->
+        stack.linked()
+        stack.server.next(PROXY_DISCONNECT, code = 502, body = Server.detail("Proxy disconnect unavailable or invalid response"))
+
+        assertFalse(backend(stack).disconnect())
     }
 
     private fun backend(stack: TestApiStack) = IonTvProxyBackend(stack.api, stack.sessionStore)

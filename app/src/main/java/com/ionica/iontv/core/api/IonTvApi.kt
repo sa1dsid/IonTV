@@ -9,6 +9,7 @@ import com.ionica.iontv.core.api.dto.HeartbeatResultDto
 import com.ionica.iontv.core.api.dto.PairingCodeDto
 import com.ionica.iontv.core.api.dto.PairingPollDto
 import com.ionica.iontv.core.api.dto.PairingPollRequestDto
+import com.ionica.iontv.core.api.dto.ProxyDisconnectedDto
 import com.ionica.iontv.core.api.dto.ProxyHeartbeatDto
 import com.ionica.iontv.core.api.dto.SessionTokensDto
 import com.ionica.iontv.core.api.dto.TokenInputDto
@@ -44,6 +45,9 @@ interface IonTvApi {
 
     @POST("api/v1/iontv/tv/proxy/heartbeat")
     suspend fun proxyHeartbeat(@Body body: ProxyHeartbeatDto): ResponseBody
+
+    @POST("api/v1/iontv/tv/proxy/disconnect")
+    suspend fun proxyDisconnect(): ProxyDisconnectedDto
 
     @POST("api/v1/iontv/auth/logout")
     suspend fun logout(): Response<Unit>

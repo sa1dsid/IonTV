@@ -21,6 +21,9 @@ class IonTvProxyBackend @Inject constructor(
 
     override fun isSignedIn(): Boolean = sessionStore.blockingCurrent() != null
 
+    override suspend fun disconnect(): Boolean =
+        runCatchingCancellable { api.proxyDisconnect() }.isSuccess
+
     private fun HeartbeatRequest.toDto() = ProxyHeartbeatDto(
         appName = appName,
         appVersion = appVersion,

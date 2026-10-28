@@ -12,6 +12,7 @@ import com.ionica.iontv.feature.consent.data.CONSENT_VERSION
 import com.ionica.iontv.feature.dashboard.data.UnlinkRepository
 import com.ionica.iontv.feature.dashboard.presentation.DashboardEvent
 import com.ionica.iontv.feature.dashboard.presentation.DashboardViewModel
+import com.ionica.iontv.feature.sharing.FakeProxyClient
 import com.ionica.iontv.feature.sharing.SharingMonitor
 import com.ionica.iontv.feature.sharing.domain.model.PauseReason
 import com.ionica.iontv.feature.sharing.domain.model.SharingState
@@ -38,6 +39,10 @@ class DashboardViewModelTest : ViewModelTestCase() {
     private val controller = FakeSharingController()
 
     private val permissions = FakeBackgroundPermissions()
+
+    private var stopsBeforeDisconnect: Int? = null
+
+    private val proxy = FakeProxyClient(onDisconnect = { stopsBeforeDisconnect = controller.stops })
 
     @Test
     fun `the dashboard keeps sharing running and shows its status`() = screen { stack ->
@@ -90,6 +95,8 @@ class DashboardViewModelTest : ViewModelTestCase() {
 
         assertEquals(listOf(DashboardEvent.Unlinked), events)
         assertEquals(1, controller.stops)
+        assertEquals(1, proxy.disconnects)
+        assertEquals(0, stopsBeforeDisconnect)
         assertConsentRecord(stack.server.bodyOf(consentPath), granted = false, screen = "dashboard")
         assertEquals(listOf("Bearer tv.access"), stack.server.authorizationsOf(consentPath))
         assertEquals(listOf("Bearer tv.access"), stack.server.authorizationsOf(Paths.LOGOUT))
@@ -142,6 +149,7 @@ class DashboardViewModelTest : ViewModelTestCase() {
             sessionStore = stack.sessionStore,
             consent = ConsentRepository(stack.api, stack.sessionStore, stack.serverClock),
             sharingController = controller,
+            proxy = proxy,
         ),
     )
 }
