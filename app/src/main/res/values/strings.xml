@@ -12,11 +12,13 @@
     <string name="signin_enter_code">or enter code</string>
 
     <string name="consent_title">Data Share on this TV</string>
-    <string name="consent_text">I allow IONTV to use part of this device’s internet channel for analytical tests in the interests of the service’s partners. The device acts as an access point for data processing via a secured API: no personal data is collected, traffic is anonymized. I can turn this off or delete the account with all data at any time in IO Aura settings.</string>
+    <string name="consent_text">I allow IONTV to use part of this device’s internet channel for analytical tests in the interests of the service’s partners. The device acts as an access point for data processing via a secured API: no personal data is collected, traffic is anonymized. I can turn this off or delete the account with all data at any time in IonTV Pulse.</string>
     <string name="consent_agree">Agree &amp; continue</string>
     <string name="consent_decline">Decline</string>
     <string name="consent_legal">By continuing you agree to the &lt;b&gt;Terms of Service&lt;/b&gt; and &lt;b&gt;Privacy Policy&lt;/b&gt;.</string>
-    <string name="consent_legal_scan">Scan to read on your phone · %1$s</string>
+    <string name="consent_terms">Terms of Service</string>
+    <string name="consent_privacy">Privacy Policy</string>
+    <string name="consent_legal_scan">Scan to read on your phone</string>
     <string name="consent_decline_title">Without Data Share this TV can’t work</string>
     <string name="consent_decline_text">Sharing is what IONTV does. You can agree anytime — nothing is lost.</string>
     <string name="consent_go_back">Go back</string>
@@ -40,9 +42,10 @@
     <string name="dashboard_paused_vpn">A VPN or proxy on this TV is blocking sharing</string>
     <string name="dashboard_paused_no_proxy">Couldn\'t connect to a sharing server</string>
     <string name="dashboard_open_settings">Open settings</string>
-    <string name="dashboard_footer_active">Stats &amp; settings — in IonTV Pulse</string>
+    <string name="dashboard_footer_active">Stats &amp; settings: IonTV Pulse</string>
     <string name="dashboard_footer_paused">Resumes automatically once allowed</string>
     <string name="dashboard_footer_offline">Reconnects automatically</string>
+    <string name="dashboard_footer_back">Back closes this screen. Sharing keeps running in the background.</string>
     <string name="dashboard_version" translatable="false">v%1$s</string>
     <string name="dashboard_unlink_title">Unlink this TV?</string>
     <string name="dashboard_unlink_text">Sharing stops immediately. The TV returns to the sign-in screen.</string>

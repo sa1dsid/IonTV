@@ -10,7 +10,7 @@ import com.ionica.iontv.core.common.runCatchingCancellable
 import com.ionica.iontv.core.session.SessionStore
 import javax.inject.Inject
 
-const val CONSENT_VERSION = "tv-consent-v1"
+const val CONSENT_VERSION = "tv-consent-v2"
 
 object ConsentScreens {
     const val CONSENT = "consent"

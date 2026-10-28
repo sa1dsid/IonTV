@@ -39,10 +39,6 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,6 +51,7 @@ import com.ionica.iontv.R
 import com.ionica.iontv.core.designsystem.component.IonTvLogo
 import com.ionica.iontv.core.designsystem.component.POPUP_BACKDROP_ALPHA
 import com.ionica.iontv.core.designsystem.component.TvButton
+import com.ionica.iontv.core.designsystem.component.TvButtonSize
 import com.ionica.iontv.core.designsystem.component.TvPopup
 import com.ionica.iontv.core.designsystem.component.rememberFocusedInteraction
 import com.ionica.iontv.core.designsystem.theme.IonTvTheme
@@ -69,9 +66,9 @@ internal const val AMBIENT_AFTER_MILLIS = 60_000L
 
 internal const val DASHBOARD_TAG = "dashboard"
 
-private val StatusDotSize = 16.dp
+private val StatusDotSize = 10.dp
 
-private val StatusDotGlow = 17.dp
+private val StatusDotGlow = 9.dp
 
 @Composable
 fun DashboardRoute(
@@ -202,20 +199,13 @@ private fun DashboardHeader(uiState: DashboardUiState) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 49.dp, top = 30.dp, end = 49.dp),
+            .padding(start = 37.dp, top = 30.dp, end = 37.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IonTvLogo(fontSize = 22.sp)
+        IonTvLogo(fontSize = 15.sp)
         Text(
-            text = buildAnnotatedString {
-                append(linkedTo)
-                append(" ")
-                withStyle(SpanStyle(color = colors.textEmphasis, fontWeight = FontWeight.Medium)) {
-                    append(account)
-                }
-                connection?.let { append(" · $it") }
-            },
+            text = listOfNotNull("$linkedTo $account", connection).joinToString(" · "),
             style = IonTvTheme.typography.statusMeta,
             color = colors.textTertiary,
         )
@@ -249,7 +239,7 @@ private fun StatusBlock(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             StatusDot(color = accent)
-            Spacer(Modifier.width(17.dp))
+            Spacer(Modifier.width(15.dp))
             Text(
                 text = stringResource(status.headline()),
                 style = typography.statusHeadline,
@@ -257,14 +247,15 @@ private fun StatusBlock(
             )
         }
         status.reason()?.let { reason ->
-            Spacer(Modifier.height(17.dp))
+            Spacer(Modifier.height(9.dp))
             Text(text = stringResource(reason), style = typography.statusReason, color = colors.textSecondary)
         }
         if (status.hasSettingsButton()) {
-            Spacer(Modifier.height(27.dp))
+            Spacer(Modifier.height(16.5.dp))
             TvButton(
                 text = stringResource(R.string.dashboard_open_settings),
                 onClick = onOpenSettingsClick,
+                size = TvButtonSize.COMPACT,
                 modifier = Modifier.focusRequester(settingsFocus),
                 interactionSource = settingsInteraction,
             )
@@ -277,12 +268,16 @@ private fun DashboardFooter(status: SharingStatus) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 49.dp, end = 49.dp, bottom = 27.dp),
+            .padding(start = 37.dp, end = 37.dp, bottom = 31.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Bottom,
     ) {
         val style = IonTvTheme.typography.footer
-        val color = IonTvTheme.colors.textTertiary
-        Text(text = stringResource(status.footer()), style = style, color = color)
+        val color = IonTvTheme.colors.textFooter
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = stringResource(status.footer()), style = style, color = color)
+            Text(text = stringResource(R.string.dashboard_footer_back), style = style, color = color)
+        }
         Text(text = stringResource(R.string.dashboard_version, BuildConfig.VERSION_NAME), style = style, color = color)
     }
 }

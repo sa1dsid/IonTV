@@ -28,7 +28,7 @@ private const val PRESSED_SCALE = 0.97f
 
 private val RingWidth = 2.5.dp
 
-private val RingOffset = 4.dp
+internal val FocusRingOffset = 4.dp
 
 private val RingGlow = 17.dp
 
@@ -42,7 +42,7 @@ private const val FIELD_GLOW_ALPHA = 0.25f
 fun Modifier.focusRing(
     focused: Boolean,
     cornerRadius: Dp,
-    offset: Dp = RingOffset,
+    offset: Dp = FocusRingOffset,
 ): Modifier {
     val color = IonTvTheme.colors.focusRing
     val visibility by animateFloatAsState(
