@@ -84,7 +84,6 @@ class SharingEngineTest : ViewModelTestCase() {
         stack.server.always(HEARTBEAT, body = ACTIVE)
         engine.refresh()
 
-        // Время теста стоит: второй heartbeat ушёл сразу, а не через десять минут.
         settle("fresh heartbeat") { stack.server.hits(HEARTBEAT) == 2 }
         settle("active") { state()?.status == SharingStatus.Active }
     }

@@ -63,11 +63,8 @@ import com.ionica.iontv.feature.sharing.domain.model.PauseReason
 import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
 import kotlinx.coroutines.delay
 
-// Сколько держать OK, чтобы открылась отвязка: дольше системного long press,
-// чтобы случайное нажатие на пульте не роняло попап.
 private const val LONG_PRESS_MILLIS = 800L
 
-// ТЗ: «после ~1 минуты бездействия экран гаснет» — защита OLED от выгорания.
 internal const val AMBIENT_AFTER_MILLIS = 60_000L
 
 internal const val DASHBOARD_TAG = "dashboard"
@@ -106,7 +103,6 @@ fun DashboardRoute(
     )
 }
 
-/** Кадры 5a–5c и попап 3c. Статистика и настройки — в IO Aura на телефоне, здесь только статус. */
 @Composable
 fun DashboardScreen(
     uiState: DashboardUiState,
@@ -124,23 +120,17 @@ fun DashboardScreen(
     var ambient by remember { mutableStateOf(false) }
     var lastInput by remember { mutableIntStateOf(0) }
 
-    // Минута без пульта — экран гаснет до строки статуса. Попап отвязки ждёт ответа
-    // и в ambient не уходит.
     LaunchedEffect(lastInput, uiState.confirmingUnlink) {
         if (uiState.confirmingUnlink) return@LaunchedEffect
         delay(AMBIENT_AFTER_MILLIS)
         ambient = true
     }
 
-    // На ACTIVE и OFFLINE кнопок нет, а в ambient их нет нигде, но пульт должен
-    // попадать в экран — иначе не поймать долгое OK и не разбудить дашборд. Когда кнопка
-    // есть, сам экран фокус не берёт: «Назад» с кнопки ушёл бы на него, а не из приложения.
     val buttonOnScreen = !ambient && uiState.status.hasSettingsButton()
     LaunchedEffect(uiState.confirmingUnlink, buttonOnScreen) {
         if (!uiState.confirmingUnlink && !buttonOnScreen) rootFocus.requestFocus()
     }
 
-    // С Android 16 «Назад» приходит не клавишей, а системным жестом — будим и им.
     BackHandler(enabled = ambient) { ambient = false }
 
     Box(
@@ -150,7 +140,6 @@ fun DashboardScreen(
             .onPreviewKeyEvent { event ->
                 lastInput++
                 if (remote.swallowsTail(event.nativeKeyEvent)) return@onPreviewKeyEvent true
-                // Любая кнопка будит дашборд, но сама никуда дальше не нажимается.
                 if (ambient) {
                     if (event.type == KeyEventType.KeyDown) {
                         ambient = false
@@ -206,7 +195,6 @@ fun DashboardScreen(
 @Composable
 private fun DashboardHeader(uiState: DashboardUiState) {
     val colors = IonTvTheme.colors
-    // ТВ привязывают по QR на сайте, и имени аккаунта бэкенд телевизору не отдаёт.
     val account = stringResource(R.string.dashboard_your_account)
     val connection = uiState.connection.label()?.takeIf { uiState.status != SharingStatus.Offline }
     val linkedTo = stringResource(R.string.dashboard_linked_to)
@@ -248,7 +236,6 @@ private fun StatusBlock(
     val accent = if (active) colors.success else colors.danger
     val settingsFocus = remember { FocusRequester() }
 
-    // И после закрытия попапа: его кнопки уходят вместе с фокусом.
     LaunchedEffect(status, popupOpen) {
         if (status.hasSettingsButton() && !popupOpen) settingsFocus.requestFocus()
     }
@@ -300,7 +287,6 @@ private fun DashboardFooter(status: SharingStatus) {
     }
 }
 
-/** Точка статуса с ореолом того же цвета, как box-shadow в макете. */
 @Composable
 private fun StatusDot(color: Color) {
     Canvas(modifier = Modifier.size(StatusDotSize)) {
@@ -348,14 +334,6 @@ private fun Connection.label(): String? = when (this) {
     Connection.OTHER, Connection.NONE -> null
 }
 
-/**
- * Пульт на дашборде. Долгое OK считаем по времени удержания: пульт присылает повторы
- * нажатия, и первый повтор после порога открывает отвязку.
- *
- * Нажатие, которое уже сработало (открыло отвязку или разбудило экран), доедаем
- * до отпускания: Compose нажимает кнопку в фокусе на отпускание OK, и без этого
- * отпускание сразу нажало бы «Keep linked» в попапе или «Open settings».
- */
 private class RemoteKeys(private val longPressMillis: Long) {
 
     private var swallowedKey: Int? = null
@@ -366,7 +344,6 @@ private class RemoteKeys(private val longPressMillis: Long) {
 
     fun swallowsTail(event: android.view.KeyEvent): Boolean {
         if (event.keyCode != swallowedKey) return false
-        // Новое нажатие той же кнопки: отпускание прошлого потерялось, не держим его.
         if (event.action == android.view.KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
             swallowedKey = null
             return false

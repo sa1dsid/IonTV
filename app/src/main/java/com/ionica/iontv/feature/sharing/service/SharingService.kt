@@ -1,5 +1,6 @@
 package com.ionica.iontv.feature.sharing.service
 
+import android.app.ForegroundServiceStartNotAllowedException
 import android.app.Service
 import android.content.Intent
 import android.content.pm.ServiceInfo
@@ -16,10 +17,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Раздача в фоне. Тип specialUse, а не dataSync: dataSync на Android 15 живёт не больше
- * шести часов в сутки и не запускается по BOOT_COMPLETED, а телевизор раздаёт круглые сутки.
- */
 @AndroidEntryPoint
 class SharingService : Service() {
 
@@ -34,6 +31,21 @@ class SharingService : Service() {
     private var sharing: Job? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (!goForeground()) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
+        if (sharing?.isActive != true) {
+            sharing = scope.launch {
+                engine.run()
+                stopSelf()
+            }
+        }
+        return START_STICKY
+    }
+
+    private fun goForeground(): Boolean = try {
         ServiceCompat.startForeground(
             this,
             SharingNotifications.NOTIFICATION_ID,
@@ -44,15 +56,10 @@ class SharingService : Service() {
                 0
             },
         )
-
-        if (sharing?.isActive != true) {
-            sharing = scope.launch {
-                engine.run()
-                // Сессия кончилась — раздавать больше нечего.
-                stopSelf()
-            }
-        }
-        return START_STICKY
+        true
+    } catch (error: IllegalStateException) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || error !is ForegroundServiceStartNotAllowedException) throw error
+        false
     }
 
     override fun onDestroy() {

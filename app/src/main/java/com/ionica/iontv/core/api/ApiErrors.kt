@@ -26,18 +26,12 @@ const val SERVICE_UNAVAILABLE = 503
 
 private val errorJson = Json { ignoreUnknownKeys = true }
 
-/**
- * Ответ бэкенда с ошибкой. У IONTV два формата: общий вход отвечает {code, message},
- * нативные TV-эндпоинты — {detail}. Ветвиться можно по статусу и по [code],
- * но не по тексту: его бэкенд не обещает держать стабильным.
- */
 class ApiError(
     val status: Int,
     val code: String?,
     val detail: String?,
 )
 
-/** null — запрос не дошёл до бэкенда или ответ не HTTP-ошибка: сеть, таймаут, разбор. */
 fun Throwable.apiError(): ApiError? {
     val http = this as? HttpException ?: return null
     val body = runCatching { http.response()?.errorBody()?.string() }.getOrNull()

@@ -15,7 +15,6 @@ private val STARTING_ACTIONS = setOf(
     Intent.ACTION_MY_PACKAGE_REPLACED,
 )
 
-/** Телевизор включили или приложение обновилось — раздача продолжается без открытия приложения. */
 @AndroidEntryPoint
 class BootReceiver : BroadcastReceiver() {
 

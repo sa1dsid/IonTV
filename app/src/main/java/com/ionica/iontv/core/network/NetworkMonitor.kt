@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Телевизоры подключены кабелем или по Wi-Fi; бэкенд различает только эти два типа. */
 enum class Connection { ETHERNET, WIFI, OTHER, NONE }
 
 data class NetworkStatus(

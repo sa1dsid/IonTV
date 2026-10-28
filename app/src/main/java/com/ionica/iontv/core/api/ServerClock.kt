@@ -9,11 +9,6 @@ import java.util.TimeZone
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Часы бэкенда. Heartbeat принимается, только если его время расходится с серверным
- * не больше чем на две минуты, а приставки часто живут с часами, сбитыми на часы и
- * дни. Смещение берём из заголовка Date каждого ответа.
- */
 @Singleton
 class ServerClock @Inject constructor(
     private val timeSource: TimeSource,
@@ -24,7 +19,6 @@ class ServerClock @Inject constructor(
 
     fun nowMillis(): Long = timeSource.nowMillis() + offsetMillis
 
-    /** Серверное «сейчас» в ISO 8601 UTC — так бэкенд принимает время heartbeat и согласия. */
     fun nowIso(): String =
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
             .apply { timeZone = TimeZone.getTimeZone("UTC") }

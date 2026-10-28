@@ -14,10 +14,8 @@ private val PUBLIC_PATHS = setOf(
     "/api/v1/iontv/pairing/poll",
 )
 
-/** Метка запроса, подписанного TV-сессией: только такие запросы обновляют токен по 401. */
 class TvSessionAuth(val accessToken: String)
 
-/** Подписывает запросы токеном TV-сессии; публичные пути уходят без него. */
 @Singleton
 class AuthInterceptor @Inject constructor(
     private val sessionStore: SessionStore,

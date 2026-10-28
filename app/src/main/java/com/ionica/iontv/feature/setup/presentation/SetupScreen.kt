@@ -88,7 +88,6 @@ fun SetupScreen(
     val autostartFocus = remember { FocusRequester() }
     val continueFocus = remember { FocusRequester() }
 
-    // Выполненный шаг прячет свою кнопку — фокус уходит на следующее несделанное.
     LaunchedEffect(uiState.backgroundActivityDone, uiState.autostartDone) {
         when {
             !uiState.backgroundActivityDone -> backgroundFocus.requestFocus()
@@ -187,7 +186,6 @@ private fun ChecklistRow(
     }
 }
 
-/** Галка только показывает состояние: тыкать в неё нельзя, её ставит проверка системы. */
 @Composable
 private fun CheckMark(done: Boolean) {
     val colors = IonTvTheme.colors
@@ -201,7 +199,6 @@ private fun CheckMark(done: Boolean) {
     ) {
         if (done) {
             Canvas(modifier = Modifier.size(14.dp)) {
-                // Галка из макета: путь «M4 12.5 10 18.5 20 6.5» в поле 24×24.
                 val unit = size.width / 24f
                 val tick = Path().apply {
                     moveTo(4f * unit, 12.5f * unit)

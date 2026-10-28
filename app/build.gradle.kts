@@ -18,7 +18,6 @@ val localProperties = Properties().apply {
 fun localProperty(name: String): String? =
     localProperties.getProperty(name)?.trim()?.removeSurrounding("\"")
 
-// Dev-бэкенд IONTV. Боевой адрес — в local.properties (IONTV_API_BASE_URL).
 val DEFAULT_API_BASE_URL = "https://dev.ioaura.ionika.cc/"
 
 android {
@@ -48,7 +47,6 @@ android {
     }
 
     signingConfigs {
-        // Общий дебаг-ключ: сборки с разных машин ставятся поверх друг друга.
         getByName("debug") {
             storeFile = rootProject.file("keystore/debug.keystore")
             storePassword = "android"
@@ -86,8 +84,6 @@ android {
     }
 }
 
-// Эталонные скриншоты превью лежат в репозитории: запись — recordRoborazziDebug,
-// сверка — verifyRoborazziDebug.
 roborazzi {
     outputDir.set(file("src/test/screenshots"))
 }

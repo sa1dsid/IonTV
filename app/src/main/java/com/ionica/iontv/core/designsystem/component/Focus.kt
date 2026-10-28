@@ -26,8 +26,6 @@ private const val EDGE_SHARE = 0.5f
 
 private const val PRESSED_SCALE = 0.97f
 
-// Фокус из макета: обводка 2 px с отступом 3 px и свечение 14 px при 30 % —
-// в dp умножено на 960/780.
 private val RingWidth = 2.5.dp
 
 private val RingOffset = 4.dp
@@ -40,7 +38,6 @@ private val FieldGlow = 15.dp
 
 private const val FIELD_GLOW_ALPHA = 0.25f
 
-/** Обводка и свечение вокруг элемента, на котором стоит фокус пульта. */
 @Composable
 fun Modifier.focusRing(
     focused: Boolean,
@@ -76,7 +73,6 @@ fun Modifier.focusRing(
     }
 }
 
-/** Свечение по краю поля ввода: у полей фокус — это цвет рамки плюс ореол, без кольца. */
 @Composable
 fun Modifier.focusGlow(focused: Boolean, cornerRadius: Dp): Modifier {
     val color = IonTvTheme.colors.focusRing
@@ -97,7 +93,6 @@ fun Modifier.focusGlow(focused: Boolean, cornerRadius: Dp): Modifier {
     }
 }
 
-/** Лёгкое «нажатие» кнопки, пока на пульте держат OK. */
 @Composable
 fun Modifier.pressScale(pressed: Boolean): Modifier {
     val scale by animateFloatAsState(
@@ -108,11 +103,6 @@ fun Modifier.pressScale(pressed: Boolean): Modifier {
     return scale(scale)
 }
 
-/**
- * Размытая тень CSS без BlurMaskFilter: концентрические обводки с квадратичным спадом.
- * Так свечение одинаково рисуется на любой версии Android, в том числе в превью.
- * У самого края размытая тень даёт половину заданной прозрачности — отсюда EDGE_SHARE.
- */
 private fun DrawScope.drawGlow(edge: Rect, cornerRadius: Float, reach: Float, color: Color) {
     val step = reach / GLOW_STEPS
     repeat(GLOW_STEPS) { index ->

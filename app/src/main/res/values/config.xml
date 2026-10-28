@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Единая страница Terms/Privacy экосистемы Ionika: на неё ведёт мини-QR на экране
-         согласия. Домен — плейсхолдер из ТЗ, настоящий передадут перед прод-сборкой. -->
     <string name="legal_url" translatable="false">https://ioaura.app/legal</string>
 </resources>

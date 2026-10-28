@@ -15,10 +15,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Чеклист 4a–4c. Галки пользователь не ставит: кнопка ведёт в системные настройки,
- * а по возвращении приложение само спрашивает систему и зажигает галку.
- */
 @HiltViewModel
 class SetupViewModel @Inject constructor(
     private val permissions: BackgroundPermissions,
@@ -41,7 +37,6 @@ class SetupViewModel @Inject constructor(
         if (opened) openedStep = step
     }
 
-    /** Экран снова на виду: при первом показе или после возврата из системных настроек. */
     fun onResume() {
         val returnedFrom = openedStep
         openedStep = null
@@ -66,12 +61,9 @@ class SetupViewModel @Inject constructor(
     }
 
     private suspend fun refresh() {
-        // Многие телевизоры не дают снять оптимизацию батареи вовсе — экрана для этого нет.
-        // Тогда, как с автозапуском, хватает того, что пользователь сходил в настройки.
         val backgroundActivity = permissions.isBatteryOptimizationIgnored() ||
             (setupStore.batterySettingsVisited() && !permissions.canRequestBatteryExemption())
 
-        // Системного статуса автозапуска у Android нет: сходил в настройки и вернулся — готово.
         val autostart = setupStore.autostartVisited()
 
         _uiState.update {

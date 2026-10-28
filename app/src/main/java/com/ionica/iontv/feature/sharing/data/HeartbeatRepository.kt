@@ -13,13 +13,10 @@ private const val CONNECTION_ETHERNET = "ethernet"
 private const val CONNECTION_WIFI = "wifi"
 
 sealed interface HeartbeatOutcome {
-    /** [status] — active, paused или offline, как его видит бэкенд; [reason] — что исправить. */
     data class Accepted(val status: String, val reason: String?) : HeartbeatOutcome
 
-    /** Телевизор отвязали в IO Aura или на сайте Check. */
     data object Unbound : HeartbeatOutcome
 
-    /** До бэкенда не достучались или он ответил ошибкой — попробуем позже. */
     data object Failed : HeartbeatOutcome
 }
 
@@ -46,7 +43,6 @@ class HeartbeatRepository @Inject constructor(
             onFailure = { HeartbeatOutcome.Failed },
         )
 
-    // Бэкенд знает только кабель и Wi-Fi; редкий ТВ на мобильном модеме считаем Wi-Fi.
     private fun Connection.apiValue(): String =
         if (this == Connection.ETHERNET) CONNECTION_ETHERNET else CONNECTION_WIFI
 }

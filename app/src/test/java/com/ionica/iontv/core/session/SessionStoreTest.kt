@@ -51,7 +51,6 @@ class SessionStoreTest {
     }
 
     private suspend fun <T> withStore(block: suspend (SessionStore) -> T): T {
-        // У DataStore один владелец файла на процесс: перед «перезапуском» прежний закрываем.
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         return try {
             block(SessionStore(preferencesIn(folder.root, "session", scope)))

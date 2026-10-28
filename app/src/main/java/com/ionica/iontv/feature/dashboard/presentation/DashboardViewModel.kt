@@ -36,8 +36,6 @@ class DashboardViewModel @Inject constructor(
     val events: Flow<DashboardEvent> = eventChannel.receiveAsFlow()
 
     init {
-        // Дашборд открывают после чеклиста и при каждом запуске: раздача должна идти,
-        // даже если сервис успели убить.
         sharingController.start()
 
         viewModelScope.launch {
@@ -59,14 +57,12 @@ class DashboardViewModel @Inject constructor(
         permissions.openBatteryOptimizationSettings()
     }
 
-    /** Долгое нажатие OK — единственный путь к отвязке на телевизоре. */
     fun onLongPressOk() {
         if (_uiState.value.unlinking) return
         _uiState.update { it.copy(confirmingUnlink = true) }
     }
 
     fun onKeepLinkedClick() {
-        // Отвязка уже идёт и не отменяется — попап не прячем, чтобы не делать вид, что передумали.
         if (_uiState.value.unlinking) return
         _uiState.update { it.copy(confirmingUnlink = false) }
     }

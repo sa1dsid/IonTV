@@ -12,11 +12,6 @@ import java.io.File
 
 private val CREATED = booleanPreferencesKey("test_file_created")
 
-/**
- * DataStore на временном файле: настоящий формат хранения, без Android. Файл создаётся
- * сразу: первое чтение ещё не созданного файла DataStore может поймать посреди первой
- * записи из ViewModel, и тест падает на FileNotFoundException.
- */
 fun preferencesIn(directory: File, name: String, scope: CoroutineScope): DataStore<Preferences> =
     PreferenceDataStoreFactory.create(
         scope = scope,

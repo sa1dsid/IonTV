@@ -34,8 +34,6 @@ internal const val AMBIENT_TAG = "ambient"
 
 private const val DOT_ALPHA = 0.4f
 
-// Строка плывёт по двум осям с разными периодами и не возвращается в ту же точку
-// подолгу — ни один пиксель OLED не горит на месте часами.
 private const val DRIFT_X_MILLIS = 47_000
 
 private const val DRIFT_Y_MILLIS = 31_000
@@ -46,7 +44,6 @@ private val DriftX = 280.dp
 
 private val DriftY = 180.dp
 
-/** Кадр 6: почти чёрный экран и одна тусклая строка статуса. */
 @Composable
 fun AmbientScreen(
     status: SharingStatus,
@@ -56,7 +53,6 @@ fun AmbientScreen(
     val dotColor = if (status == SharingStatus.Active) colors.success else colors.danger
     val headline = stringResource(status.ambientHeadline())
 
-    // Фазы по кругу: строка стартует из центра и плавно уходит по синусу.
     val drift = rememberInfiniteTransition(label = "ambient-drift")
     val phaseX by drift.animateFloat(
         initialValue = 0f,

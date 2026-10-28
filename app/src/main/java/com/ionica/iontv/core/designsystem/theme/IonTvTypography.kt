@@ -28,10 +28,6 @@ private val EvenLineHeight = LineHeightStyle(
     trim = LineHeightStyle.Trim.None,
 )
 
-/**
- * Кегли взяты из iontv_flow_full.html и умножены на 960/780: кадр макета шириной
- * 780 px изображает весь экран телевизора, а он у нас всегда 960 dp (см. IonTvTheme).
- */
 @Immutable
 data class IonTvTypography(
     val logo: TextStyle,

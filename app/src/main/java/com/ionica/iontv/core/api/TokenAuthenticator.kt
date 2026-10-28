@@ -13,14 +13,8 @@ import okhttp3.Route
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// Ответы, после которых refresh-токен уже не оживить: сессию отозвали, ТВ отвязали
-// или токен истёк. 429, 5xx и обрыв сети сессию не закрывают — это временно.
 private val REJECTED = setOf(BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, GONE, UNPROCESSABLE)
 
-/**
- * Обновляет TV-сессию по 401 и повторяет запрос с новым токеном. Если бэкенд
- * отклонил refresh-токен, сессия закрывается — телевизор уходит на экран входа.
- */
 @Singleton
 class TokenAuthenticator @Inject constructor(
     private val sessionStore: SessionStore,
@@ -36,7 +30,6 @@ class TokenAuthenticator @Inject constructor(
         synchronized(lock) {
             val current = sessionStore.blockingCurrent() ?: return null
 
-            // Пока запрос ждал блокировку, токен мог обновить соседний запрос.
             if (current.accessToken != signed.accessToken) {
                 return response.request.signedWith(current.accessToken)
             }

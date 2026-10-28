@@ -73,10 +73,6 @@ fun ConsentRoute(
     )
 }
 
-/**
- * Кадры 3 и 3b. Длинные документы на телевизоре не открываем: мини-QR ведёт на единую
- * страницу Terms/Privacy экосистемы, её читают с телефона.
- */
 @Composable
 fun ConsentScreen(
     uiState: ConsentUiState,
@@ -94,7 +90,6 @@ fun ConsentScreen(
 
     BackHandler(enabled = !uiState.declining, onBack = onDeclineClick)
 
-    // Попап закрылся — его кнопок больше нет, и фокус возвращается на согласие.
     LaunchedEffect(uiState.declining) {
         if (!uiState.declining) agreeFocus.requestFocus()
     }
