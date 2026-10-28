@@ -15,11 +15,6 @@ class IonTvRootViewModel @Inject constructor(
     sessionStore: SessionStore,
 ) : ViewModel() {
 
-    /**
-     * Сессия кончилась вне экранов: ТВ отвязали в IO Aura или на сайте Check, бэкенд
-     * отклонил refresh-токен. Срабатывает только на переход «привязан → нет»,
-     * первое значение при запуске пропускаем.
-     */
     val sessionEnded: Flow<Unit> = sessionStore.session
         .map { it != null }
         .distinctUntilChanged()

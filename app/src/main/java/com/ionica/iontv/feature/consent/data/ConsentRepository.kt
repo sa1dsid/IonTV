@@ -10,19 +10,13 @@ import com.ionica.iontv.core.common.runCatchingCancellable
 import com.ionica.iontv.core.session.SessionStore
 import javax.inject.Inject
 
-/**
- * Версия текста согласия с экрана 3. Меняется вместе с текстом: тогда бэкенд увидит
- * новую версию в аудите, а телевизор попросит согласиться заново.
- */
 const val CONSENT_VERSION = "tv-consent-v1"
 
-/** Экраны, где согласие дают или отзывают, — для аудита на бэкенде. */
 object ConsentScreens {
     const val CONSENT = "consent"
     const val DASHBOARD = "dashboard"
 }
 
-// Бэкенд принимает в снимке устройства не больше 100 символов на поле.
 private const val DEVICE_INFO_MAX_LENGTH = 100
 
 class ConsentRepository @Inject constructor(
@@ -38,12 +32,10 @@ class ConsentRepository @Inject constructor(
         sessionStore.saveConsent(CONSENT_VERSION)
     }
 
-    /** Отзыв при отвязке с телевизора. */
     suspend fun withdraw(): Result<Unit> = runCatchingCancellable {
         record(granted = false, screen = ConsentScreens.DASHBOARD)
     }
 
-    // Запись для аудита покупателей трафика: что показали, где, когда и на каком устройстве.
     private suspend fun record(granted: Boolean, screen: String) {
         api.consent(
             deviceId = sessionStore.deviceId(),

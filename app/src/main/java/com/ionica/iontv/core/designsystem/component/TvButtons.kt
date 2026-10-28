@@ -35,18 +35,11 @@ private val ButtonCorner = 10.dp
 private val ActionCorner = 7.dp
 
 enum class TvButtonTone {
-    /** Основное действие: светлая подпись. */
     NORMAL,
 
-    /** Второстепенное или разрушительное действие: приглушённая подпись. */
     MUTED,
 }
 
-/**
- * Кнопка под D-pad. Выключенная кнопка не берёт фокус: пульт её просто перескакивает,
- * как заблокированный Continue в чеклисте. Занятая ([busy]) — пока идёт её запрос —
- * выглядит выключенной, но фокус держит: иначе после ошибки OK на пульте уходило бы в никуда.
- */
 @Composable
 fun TvButton(
     text: String,
@@ -92,7 +85,6 @@ fun TvButton(
     }
 }
 
-/** Моноширинная ссылка-действие внутри строки, вроде «OPEN SETTINGS →» в чеклисте. */
 @Composable
 fun TvActionLink(
     text: String,
@@ -115,10 +107,6 @@ fun TvActionLink(
     )
 }
 
-/**
- * Для превью и скриншотов: ставит элементу фокус, не трогая настоящий фокус окна.
- * Событие уходит кадром позже: раньше элемент ещё не подписан на источник и его теряет.
- */
 @Composable
 internal fun rememberFocusedInteraction(): MutableInteractionSource {
     val source = remember { MutableInteractionSource() }

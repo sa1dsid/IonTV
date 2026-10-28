@@ -14,8 +14,6 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        // В Google Maven — только то, что там лежит: остальное Gradle не ищет там
-        // впустую и сразу берёт из Maven Central.
         google {
             content {
                 includeGroupByRegex("com\\.android.*")
@@ -26,6 +24,10 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven {
+            url = uri("third-party/proxy-sdk-repo")
+            content { includeGroup("io.proxysdk") }
+        }
     }
 }
 

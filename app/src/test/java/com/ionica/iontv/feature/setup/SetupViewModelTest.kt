@@ -43,7 +43,6 @@ class SetupViewModelTest : ViewModelTestCase() {
         viewModel.onOpenSettingsClick(SetupStep.BACKGROUND_ACTIVITY)
         assertEquals(listOf(FakeBackgroundPermissions.BATTERY), permissions.opened)
 
-        // Вернулся, ничего не поменяв, — галки нет.
         viewModel.onResume()
         settle("visit saved") { setupStoreRead { batterySettingsVisited() } }
         assertFalse(viewModel.uiState.value.backgroundActivityDone)

@@ -36,7 +36,6 @@ class SignInViewModel @Inject constructor(
         viewModelScope.launch { pairUntilLinked() }
     }
 
-    // Привязка живёт пять минут. Истекла — по ТЗ ТВ сам берёт новую и рисует новый QR.
     private suspend fun pairUntilLinked() {
         while (true) {
             _uiState.update { it.copy(pairing = PairingUi.Loading) }

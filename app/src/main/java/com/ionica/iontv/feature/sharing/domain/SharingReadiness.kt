@@ -5,7 +5,6 @@ import com.ionica.iontv.core.system.DeviceSetupStore
 import com.ionica.iontv.feature.consent.data.ConsentRepository
 import javax.inject.Inject
 
-/** Раздачу запускаем только на привязанном ТВ, давшем согласие и прошедшем чеклист. */
 class SharingReadiness @Inject constructor(
     private val sessionStore: SessionStore,
     private val consent: ConsentRepository,

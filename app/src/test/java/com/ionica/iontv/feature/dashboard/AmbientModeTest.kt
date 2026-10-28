@@ -81,7 +81,6 @@ class AmbientModeTest {
         compose.onNodeWithTag(AMBIENT_TAG).assertDoesNotExist()
     }
 
-    // Часы теста стоят, и без этого изменения от нажатия ждали бы следующего события.
     private fun settleInput() {
         compose.waitForIdle()
         compose.mainClock.advanceTimeByFrame()
@@ -102,7 +101,6 @@ class AmbientModeTest {
                 )
             }
         }
-        // Первый кадр: экран берёт фокус, и нажатия пульта доходят до него.
         compose.mainClock.advanceTimeBy(100)
     }
 }

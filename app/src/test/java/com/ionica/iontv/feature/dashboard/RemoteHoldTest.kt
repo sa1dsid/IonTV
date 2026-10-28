@@ -39,7 +39,6 @@ private const val UNLINK_TITLE = "Unlink this TV?"
 
 private const val OPEN_SETTINGS = "Open settings"
 
-/** Удержание OK как на настоящем пульте: нажатие, повторы с 400 мс каждые 50 мс, отпускание. */
 @OptIn(ExperimentalTestApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = TV_1080P)
@@ -91,7 +90,6 @@ class RemoteHoldTest {
     @Test
     fun `keep linked on a paused dashboard gives the focus back to open settings`() {
         dashboard(DashboardUiState(status = SharingStatus.Paused(PauseReason.BATTERY_OPTIMIZATION)))
-        // Телевизор без сенсора сразу отдаёт кнопке фокус; Robolectric стартует в режиме касаний.
         compose.onNodeWithText(OPEN_SETTINGS).performSemanticsAction(SemanticsActions.RequestFocus)
         settle()
         holdOk(millis = 1_300)
@@ -152,7 +150,6 @@ class RemoteHoldTest {
         send(down, down + millis, ACTION_UP, repeat = 0)
     }
 
-    // Между событиями пульта проходит кадр: попап успевает появиться и забрать фокус.
     private fun send(downTime: Long, eventTime: Long, action: Int, repeat: Int) {
         val native = android.view.KeyEvent(downTime, eventTime, action, KEYCODE_DPAD_CENTER, repeat)
         compose.onRoot().performKeyPress(KeyEvent(native))

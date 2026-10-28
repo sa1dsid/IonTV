@@ -34,19 +34,14 @@ import com.ionica.iontv.core.designsystem.component.TvSpinner
 import com.ionica.iontv.core.designsystem.component.emphasizedString
 import com.ionica.iontv.core.designsystem.theme.IonTvTheme
 
-// По ТЗ QR большой: в нём теперь ссылка с токеном, модулей много, и мелкий QR камера
-// телефона с дивана не возьмёт.
 private val QrSize = 260.dp
 
 private val QrCorner = 10.dp
 
 private val PathsWidth = 369.dp
 
-// Строка «or enter code» шире самого QR, а код бывает до восьми символов: колонка держит
-// ширину во всех состояниях, чтобы правая часть не съезжала, пока код обновляется.
 private val PairingWidth = 312.dp
 
-// Под QR место для строки с кодом: высота постоянная, чтобы колонка не прыгала.
 private val BelowQrHeight = 56.dp
 
 @Composable
@@ -68,10 +63,6 @@ fun SignInRoute(
     SignInScreen(uiState = uiState, modifier = modifier)
 }
 
-/**
- * Кадр 2: входа на ТВ нет. Человек сканирует QR на сайте IonTV Pulse или камерой телефона,
- * либо вводит код вручную. Нажимать на телевизоре нечего: QR сам обновляется, когда истекает.
- */
 @Composable
 fun SignInScreen(
     uiState: SignInUiState,
@@ -180,7 +171,6 @@ private fun SignInScreenPreview() {
     }
 }
 
-/** По ТЗ код бывает до восьми символов — строка под QR не должна переноситься. */
 @Preview(widthDp = 960, heightDp = 540)
 @Composable
 private fun SignInScreenLongCodePreview() {

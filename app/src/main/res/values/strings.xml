@@ -1,21 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- IONTV · строки интерфейса (EN). Бренды не переводятся: IONTV, IonTV Pulse, IO Aura, Data Share. -->
 <resources>
     <string name="app_name" translatable="false">IONTV</string>
 
-    <!-- Вордмарк I(планета)NTV: буква O — картинка планеты. -->
     <string name="brand_i" translatable="false">I</string>
     <string name="brand_ntv" translatable="false">NTV</string>
 
-    <!-- Нет связи: заставка и экран входа повторяют сами, кнопок нет. -->
     <string name="no_connection_retrying">No connection · retrying…</string>
 
-    <!-- 2 · Привязка: входа на ТВ нет, QR сканируют на сайте IonTV Pulse или камерой телефона -->
     <string name="signin_title">Link this TV to your account</string>
     <string name="signin_how">Scan the code with your phone camera, or open &lt;b&gt;IonTV Pulse&lt;/b&gt; → &lt;b&gt;Add device&lt;/b&gt;. Manual code entry is there too.</string>
     <string name="signin_enter_code">or enter code</string>
 
-    <!-- 3/3b · Согласие на Data Share: юртекст — финал терминального консента IO Aura -->
     <string name="consent_title">Data Share on this TV</string>
     <string name="consent_text">I allow IONTV to use part of this device’s internet channel for analytical tests in the interests of the service’s partners. The device acts as an access point for data processing via a secured API: no personal data is collected, traffic is anonymized. I can turn this off or delete the account with all data at any time in IO Aura settings.</string>
     <string name="consent_agree">Agree &amp; continue</string>
@@ -27,7 +22,6 @@
     <string name="consent_go_back">Go back</string>
     <string name="consent_exit">Exit app</string>
 
-    <!-- 4a–4c · Настройка: галки ставит проверка системы, а не пользователь -->
     <string name="setup_title">Complete both steps to start sharing</string>
     <string name="setup_background">Allow background activity</string>
     <string name="setup_autostart">Allow autostart on boot</string>
@@ -35,7 +29,6 @@
     <string name="setup_done">DONE</string>
     <string name="setup_continue">Continue</string>
 
-    <!-- 5a–5c · Дашборд и 3c · отвязка по долгому OK -->
     <string name="dashboard_linked_to">linked to</string>
     <string name="dashboard_your_account">your account</string>
     <string name="dashboard_ethernet" translatable="false">Ethernet</string>
@@ -44,6 +37,8 @@
     <string name="dashboard_paused">PAUSED</string>
     <string name="dashboard_offline">OFFLINE</string>
     <string name="dashboard_paused_battery">Battery optimization is blocking background sharing</string>
+    <string name="dashboard_paused_vpn">A VPN or proxy on this TV is blocking sharing</string>
+    <string name="dashboard_paused_no_proxy">Couldn\'t connect to a sharing server</string>
     <string name="dashboard_open_settings">Open settings</string>
     <string name="dashboard_footer_active">Stats &amp; settings — in IonTV Pulse</string>
     <string name="dashboard_footer_paused">Resumes automatically once allowed</string>
@@ -54,11 +49,9 @@
     <string name="dashboard_keep_linked">Keep linked</string>
     <string name="dashboard_unlink">Unlink</string>
 
-    <!-- Уведомление сервиса раздачи: телевизоры его обычно не показывают -->
     <string name="sharing_notification_channel">Data Share</string>
     <string name="sharing_notification_text">Data Share is running</string>
 
-    <!-- Ошибки — строкой на месте, попапов для них нет -->
     <string name="error_no_connection">No connection · check your network</string>
     <string name="error_server">Server is not responding · try again later</string>
 </resources>

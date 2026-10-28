@@ -2,6 +2,8 @@ package com.ionica.iontv.feature.sharing.di
 
 import com.ionica.iontv.feature.sharing.SharingEngine
 import com.ionica.iontv.feature.sharing.SharingMonitor
+import com.ionica.iontv.feature.sharing.proxy.ProxyClient
+import com.ionica.iontv.feature.sharing.proxy.SdkProxyClient
 import com.ionica.iontv.feature.sharing.service.ServiceSharingController
 import com.ionica.iontv.feature.sharing.service.SharingController
 import dagger.Binds
@@ -18,4 +20,7 @@ interface SharingModule {
 
     @Binds
     fun bindSharingController(impl: ServiceSharingController): SharingController
+
+    @Binds
+    fun bindProxyClient(impl: SdkProxyClient): ProxyClient
 }

@@ -22,7 +22,6 @@ import com.ionica.iontv.core.designsystem.theme.IonTvTheme
 
 private const val TURN_MILLIS = 900
 
-// Верхняя четверть кольца — как border-top-color у круглого спиннера в макете.
 private const val ARC_START_DEGREES = -135f
 
 private const val ARC_SWEEP_DEGREES = 90f

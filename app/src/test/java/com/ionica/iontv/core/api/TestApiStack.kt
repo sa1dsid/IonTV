@@ -8,7 +8,6 @@ import okhttp3.OkHttpClient
 import java.util.concurrent.AbstractExecutorService
 import java.util.concurrent.TimeUnit
 
-/** Сетевой стек как в ApiModule — с теми же перехватчиками, — но смотрит в MockWebServer. */
 internal class TestApiStack(
     val server: RoutingApiServer,
     val sessionStore: SessionStore,
@@ -43,7 +42,6 @@ internal class TestApiStack(
     }
 }
 
-/** Retrofit зовёт suspend-методы через enqueue: здесь они выполняются тут же, без пула. */
 private class SameThreadExecutorService : AbstractExecutorService() {
 
     private var stopped = false

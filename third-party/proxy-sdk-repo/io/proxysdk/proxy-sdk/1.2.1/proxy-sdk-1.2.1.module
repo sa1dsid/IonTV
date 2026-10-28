@@ -1,0 +1,118 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.proxysdk",
+    "module": "proxy-sdk",
+    "version": "1.2.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.13"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.10.2"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "proxy-sdk-1.2.1.aar",
+          "url": "proxy-sdk-1.2.1.aar",
+          "size": 252014,
+          "sha512": "9f0c8f91a65526f47b9aaf6ac39a2287f5e8c2fc9003c58a408e6c9540b14191a227eba74df40ee42bb1d1059e39a4dc83ff233f2ce0319ff36a6e6bcd3474e5",
+          "sha256": "72db7b4fd3f3c168520421d46f8b391d88ab535277ae6f8f1741a895a62889c9",
+          "sha1": "ff13234c9cadeb30c0f26d5bde52d04a662ea6b3",
+          "md5": "a4a1777aa1a62139cebf7010a5f10384"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.17.0"
+          }
+        },
+        {
+          "group": "androidx.annotation",
+          "module": "annotation",
+          "version": {
+            "requires": "1.9.1"
+          }
+        },
+        {
+          "group": "com.google.code.gson",
+          "module": "gson",
+          "version": {
+            "requires": "2.13.2"
+          }
+        },
+        {
+          "group": "com.google.android.gms",
+          "module": "play-services-appset",
+          "version": {
+            "requires": "16.1.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.10.2"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "proxy-sdk-1.2.1.aar",
+          "url": "proxy-sdk-1.2.1.aar",
+          "size": 252014,
+          "sha512": "9f0c8f91a65526f47b9aaf6ac39a2287f5e8c2fc9003c58a408e6c9540b14191a227eba74df40ee42bb1d1059e39a4dc83ff233f2ce0319ff36a6e6bcd3474e5",
+          "sha256": "72db7b4fd3f3c168520421d46f8b391d88ab535277ae6f8f1741a895a62889c9",
+          "sha1": "ff13234c9cadeb30c0f26d5bde52d04a662ea6b3",
+          "md5": "a4a1777aa1a62139cebf7010a5f10384"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 * text=auto eol=lf
 *.png binary
 *.jar binary
+*.aar binary
 *.ttf binary
 debug.keystore binary

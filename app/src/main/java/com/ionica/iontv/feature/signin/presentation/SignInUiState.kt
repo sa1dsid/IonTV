@@ -5,13 +5,10 @@ data class SignInUiState(
 )
 
 sealed interface PairingUi {
-    /** Берём привязку — в том числе новую, когда прежняя истекла. */
     data object Loading : PairingUi
 
-    /** Привязку не получить: нет связи. Повторяем сами, как на заставке. */
     data object Offline : PairingUi
 
-    /** [qrContent] — ссылка на сайт с токеном для QR, [code] — для ручного ввода. */
     data class Ready(val code: String, val qrContent: String) : PairingUi
 }
 

@@ -16,10 +16,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * Раздача в фоне. Тип specialUse, а не dataSync: dataSync на Android 15 живёт не больше
- * шести часов в сутки и не запускается по BOOT_COMPLETED, а телевизор раздаёт круглые сутки.
- */
 @AndroidEntryPoint
 class SharingService : Service() {
 
@@ -28,6 +24,9 @@ class SharingService : Service() {
 
     @Inject
     lateinit var notifications: SharingNotifications
+
+    @Inject
+    lateinit var controller: SharingController
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -48,8 +47,7 @@ class SharingService : Service() {
         if (sharing?.isActive != true) {
             sharing = scope.launch {
                 engine.run()
-                // Сессия кончилась — раздавать больше нечего.
-                stopSelf()
+                controller.stop()
             }
         }
         return START_STICKY

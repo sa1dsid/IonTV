@@ -1,6 +1,5 @@
 package com.ionica.iontv.core.system
 
-/** Системные настройки в тесте: «открыть» — значит записать, что пользователь туда ушёл. */
 internal class FakeBackgroundPermissions(
     var batteryIgnored: Boolean = false,
     var exemptionScreen: Boolean = true,

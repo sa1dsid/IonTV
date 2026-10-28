@@ -20,14 +20,12 @@ import androidx.compose.ui.unit.sp
 import com.ionica.iontv.R
 import com.ionica.iontv.core.designsystem.theme.IonTvTheme
 
-// Пропорции из макета: планета 0.95em, зазоры 0.1em, планета опущена на 0.04em.
 private const val PLANET_EM = 0.95f
 
 private const val GAP_EM = 0.1f
 
 private const val PLANET_SHIFT_EM = 0.04f
 
-/** Вордмарк I(планета)NTV: буква O заменена картинкой планеты, как в остальных вордмарках. */
 @Composable
 fun IonTvLogo(
     modifier: Modifier = Modifier,

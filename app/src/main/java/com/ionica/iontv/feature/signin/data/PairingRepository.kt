@@ -17,18 +17,10 @@ import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
-// Протухшая или уже недействительная привязка: Swagger обещает 401 и 410, а 404 и 422
-// тоже значат, что эту привязку уже не опросить. Для экрана всё одно — нужен новый QR.
 private val PAIRING_GONE = setOf(UNAUTHORIZED, NOT_FOUND, GONE, UNPROCESSABLE)
 
-// Интервал опроса задаёт сервер; ноль в ответе не должен превратиться в опрос без пауз.
 private val MIN_POLL_INTERVAL = 1.seconds
 
-/**
- * Привязка по QR: ТВ берёт у бэкенда ссылку и код, пользователь подтверждает их на сайте
- * IonTV Pulse, а ТВ опрашивает бэкенд, пока не получит свою сессию. Пароль и Google-токены
- * пользователя телевизор никогда не видит.
- */
 class PairingRepository @Inject constructor(
     private val api: IonTvApi,
     private val sessionStore: SessionStore,

@@ -9,6 +9,5 @@ class BackendHealth @Inject constructor(
     private val api: IonTvApi,
 ) {
 
-    /** Бэкенд отвечает и IONTV на нём включён: health отвечает даже при выключенном IONTV. */
     suspend fun isServing(): Boolean = runCatchingCancellable { api.health().enabled }.getOrDefault(false)
 }
