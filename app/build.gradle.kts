@@ -19,7 +19,13 @@ val localProperties = Properties().apply {
 fun localProperty(name: String): String? =
     localProperties.getProperty(name)?.trim()?.removeSurrounding("\"")
 
-val DEFAULT_API_BASE_URL = "https://dev.ioaura.ionika.cc/"
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use(::load)
+}
+
+val DEV_API_BASE_URL = "https://dev.ioaura.ionika.cc/"
+val PROD_API_BASE_URL = "https://api.ioaura.ionika.cc/"
 
 android {
     namespace = "com.ionica.iontv"
@@ -31,16 +37,10 @@ android {
         applicationId = "com.ionica.iontv"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        buildConfigField(
-            "String",
-            "API_BASE_URL",
-            "\"${localProperty("IONTV_API_BASE_URL") ?: DEFAULT_API_BASE_URL}\"",
-        )
     }
 
     androidResources {
@@ -54,10 +54,27 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        if (keystoreProperties.containsKey("storeFile")) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
+        debug {
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                "\"${localProperty("IONTV_API_BASE_URL") ?: DEV_API_BASE_URL}\"",
+            )
+        }
         release {
+            buildConfigField("String", "API_BASE_URL", "\"$PROD_API_BASE_URL\"")
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
