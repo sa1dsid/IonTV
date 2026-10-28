@@ -58,6 +58,7 @@ import com.ionica.iontv.core.designsystem.theme.IonTvTheme
 import com.ionica.iontv.core.network.Connection
 import com.ionica.iontv.feature.sharing.domain.model.PauseReason
 import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
+import com.ionica.iontv.feature.update.domain.model.AppUpdate
 import kotlinx.coroutines.delay
 
 private const val LONG_PRESS_MILLIS = 800L
@@ -69,6 +70,10 @@ internal const val DASHBOARD_TAG = "dashboard"
 private val StatusDotSize = 10.dp
 
 private val StatusDotGlow = 9.dp
+
+private val UpdateBannerTop = 89.dp
+
+private val StatusShiftUnderBanner = 44.dp
 
 @Composable
 fun DashboardRoute(
@@ -97,6 +102,7 @@ fun DashboardRoute(
         onKeepLinkedClick = viewModel::onKeepLinkedClick,
         onUnlinkClick = viewModel::onUnlinkClick,
         modifier = modifier,
+        onWake = viewModel::onWake,
     )
 }
 
@@ -108,6 +114,7 @@ fun DashboardScreen(
     onKeepLinkedClick: () -> Unit,
     onUnlinkClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onWake: () -> Unit = {},
     settingsInteraction: MutableInteractionSource? = null,
     popupInteraction: MutableInteractionSource? = null,
 ) {
@@ -116,6 +123,10 @@ fun DashboardScreen(
     val remote = remember { RemoteKeys(LONG_PRESS_MILLIS) }
     var ambient by remember { mutableStateOf(false) }
     var lastInput by remember { mutableIntStateOf(0) }
+    val wake = {
+        ambient = false
+        onWake()
+    }
 
     LaunchedEffect(lastInput, uiState.confirmingUnlink) {
         if (uiState.confirmingUnlink) return@LaunchedEffect
@@ -128,7 +139,7 @@ fun DashboardScreen(
         if (!uiState.confirmingUnlink && !buttonOnScreen) rootFocus.requestFocus()
     }
 
-    BackHandler(enabled = ambient) { ambient = false }
+    BackHandler(enabled = ambient, onBack = wake)
 
     Box(
         modifier = modifier
@@ -139,7 +150,7 @@ fun DashboardScreen(
                 if (remote.swallowsTail(event.nativeKeyEvent)) return@onPreviewKeyEvent true
                 if (ambient) {
                     if (event.type == KeyEventType.KeyDown) {
-                        ambient = false
+                        wake()
                         remote.swallowRestOf(event.nativeKeyEvent)
                     }
                     return@onPreviewKeyEvent true
@@ -157,20 +168,32 @@ fun DashboardScreen(
         if (ambient) {
             AmbientScreen(status = uiState.status)
         } else {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .alpha(if (uiState.confirmingUnlink) POPUP_BACKDROP_ALPHA else 1f),
             ) {
-                DashboardHeader(uiState)
-                StatusBlock(
-                    status = uiState.status,
-                    popupOpen = uiState.confirmingUnlink,
-                    onOpenSettingsClick = onOpenSettingsClick,
-                    settingsInteraction = settingsInteraction,
-                    modifier = Modifier.weight(1f),
-                )
-                DashboardFooter(uiState.status)
+                Column(modifier = Modifier.fillMaxSize()) {
+                    DashboardHeader(uiState)
+                    StatusBlock(
+                        status = uiState.status,
+                        popupOpen = uiState.confirmingUnlink,
+                        onOpenSettingsClick = onOpenSettingsClick,
+                        settingsInteraction = settingsInteraction,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(top = if (uiState.update != null) StatusShiftUnderBanner else 0.dp),
+                    )
+                    DashboardFooter(uiState.status)
+                }
+                uiState.update?.let { update ->
+                    UpdateBanner(
+                        update = update,
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = UpdateBannerTop),
+                    )
+                }
             }
         }
 
@@ -363,6 +386,27 @@ private fun DashboardActivePreview() {
     IonTvTheme {
         DashboardScreen(
             uiState = DashboardUiState(connection = Connection.ETHERNET),
+            onOpenSettingsClick = {},
+            onLongPressOk = {},
+            onKeepLinkedClick = {},
+            onUnlinkClick = {},
+        )
+    }
+}
+
+@Preview(widthDp = 960, heightDp = 540)
+@Composable
+private fun DashboardUpdatePreview() {
+    IonTvTheme {
+        DashboardScreen(
+            uiState = DashboardUiState(
+                connection = Connection.ETHERNET,
+                update = AppUpdate(
+                    versionName = "1.1.0",
+                    installationUrl = "https://iontv.ionika.cc/tv",
+                    downloadUrl = "https://tv.ionika.cc",
+                ),
+            ),
             onOpenSettingsClick = {},
             onLongPressOk = {},
             onKeepLinkedClick = {},

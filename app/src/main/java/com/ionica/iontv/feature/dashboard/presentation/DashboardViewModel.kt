@@ -9,7 +9,9 @@ import com.ionica.iontv.feature.sharing.SharingMonitor
 import com.ionica.iontv.feature.sharing.domain.model.PauseReason
 import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
 import com.ionica.iontv.feature.sharing.service.SharingController
+import com.ionica.iontv.feature.update.data.AppUpdateRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +29,7 @@ class DashboardViewModel @Inject constructor(
     private val sessionStore: SessionStore,
     private val permissions: BackgroundPermissions,
     private val unlinkRepository: UnlinkRepository,
+    private val updates: AppUpdateRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -34,6 +37,8 @@ class DashboardViewModel @Inject constructor(
 
     private val eventChannel = Channel<DashboardEvent>(Channel.BUFFERED)
     val events: Flow<DashboardEvent> = eventChannel.receiveAsFlow()
+
+    private var updateCheck: Job? = null
 
     init {
         sharingController.start()
@@ -51,10 +56,22 @@ class DashboardViewModel @Inject constructor(
 
     fun onResume() {
         sharing.recheckBattery()
+        checkForUpdate()
+    }
+
+    fun onWake() {
+        checkForUpdate()
     }
 
     fun onOpenSettingsClick() {
         permissions.openBatteryOptimizationSettings()
+    }
+
+    private fun checkForUpdate() {
+        if (updateCheck?.isActive == true) return
+        updateCheck = viewModelScope.launch {
+            updates.check().onSuccess { update -> _uiState.update { it.copy(update = update) } }
+        }
     }
 
     fun onLongPressOk() {

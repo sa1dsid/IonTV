@@ -1,5 +1,6 @@
 package com.ionica.iontv.core.api
 
+import com.ionica.iontv.core.api.dto.ConfigDto
 import com.ionica.iontv.core.api.dto.ConsentDto
 import com.ionica.iontv.core.api.dto.ConsentStateDto
 import com.ionica.iontv.core.api.dto.DeviceDto
@@ -21,6 +22,9 @@ interface IonTvApi {
 
     @GET("iontv/health")
     suspend fun health(): HealthDto
+
+    @GET("api/v1/iontv/config")
+    suspend fun config(): ConfigDto
 
     @POST("api/v1/iontv/auth/refresh")
     suspend fun refresh(@Body body: TokenInputDto): SessionTokensDto

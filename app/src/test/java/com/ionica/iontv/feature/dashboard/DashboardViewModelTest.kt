@@ -1,6 +1,7 @@
 package com.ionica.iontv.feature.dashboard
 
 import com.ionica.iontv.core.api.Paths
+import com.ionica.iontv.core.api.Server
 import com.ionica.iontv.core.api.TestApiStack
 import com.ionica.iontv.core.network.Connection
 import com.ionica.iontv.core.session.SessionTokens
@@ -17,6 +18,8 @@ import com.ionica.iontv.feature.sharing.domain.model.PauseReason
 import com.ionica.iontv.feature.sharing.domain.model.SharingState
 import com.ionica.iontv.feature.sharing.domain.model.SharingStatus
 import com.ionica.iontv.feature.sharing.service.SharingController
+import com.ionica.iontv.feature.update.config
+import com.ionica.iontv.feature.update.data.AppUpdateRepository
 import com.ionica.iontv.testing.ViewModelTestCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +32,8 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+
+private const val CONFIG = "/api/v1/iontv/config"
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DashboardViewModelTest : ViewModelTestCase() {
@@ -114,6 +119,22 @@ class DashboardViewModelTest : ViewModelTestCase() {
     }
 
     @Test
+    fun `a newer version puts up the update banner, and a failed check does not take it down`() = screen { stack ->
+        linked(stack)
+        stack.server.next(CONFIG, body = config(latest = "1.1.0"))
+        val viewModel = dashboard(stack)
+
+        viewModel.onResume()
+        settle("banner") { viewModel.uiState.value.update != null }
+        assertEquals("1.1.0", viewModel.uiState.value.update?.versionName)
+
+        stack.server.next(CONFIG, code = 503, body = Server.detail("IONTV is disabled"))
+        viewModel.onWake()
+        settle("second check") { stack.server.hits(CONFIG) == 2 }
+        assertEquals("1.1.0", viewModel.uiState.value.update?.versionName)
+    }
+
+    @Test
     fun `a backend without our consent sends the tv back to the consent screen`() = screen { stack ->
         linked(stack)
         stack.sessionStore.saveConsent(CONSENT_VERSION)
@@ -143,6 +164,7 @@ class DashboardViewModelTest : ViewModelTestCase() {
             consent = ConsentRepository(stack.api, stack.sessionStore, stack.serverClock),
             sharingController = controller,
         ),
+        updates = AppUpdateRepository(stack.unauthenticatedApi, installedVersion = "1.0.0"),
     )
 }
 

@@ -54,6 +54,9 @@ data class IonTvTypography(
     val popupBody: TextStyle,
     val legal: TextStyle,
     val legalLabel: TextStyle,
+    val bannerTitle: TextStyle,
+    val bannerBody: TextStyle,
+    val bannerMeta: TextStyle,
 )
 
 val IonTvDefaultTypography = IonTvTypography(
@@ -215,6 +218,27 @@ val IonTvDefaultTypography = IonTvTypography(
         fontWeight = FontWeight.SemiBold,
         fontSize = 15.sp,
         lineHeight = 21.sp,
+        lineHeightStyle = EvenLineHeight,
+    ),
+    bannerTitle = TextStyle(
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 16.5.sp,
+        lineHeight = 25.5.sp,
+        lineHeightStyle = EvenLineHeight,
+    ),
+    bannerBody = TextStyle(
+        fontFamily = SpaceGrotesk,
+        fontWeight = FontWeight.Normal,
+        fontSize = 10.5.sp,
+        lineHeight = 16.5.sp,
+        lineHeightStyle = EvenLineHeight,
+    ),
+    bannerMeta = TextStyle(
+        fontFamily = JetBrainsMono,
+        fontWeight = FontWeight.Normal,
+        fontSize = 10.5.sp,
+        lineHeight = 18.sp,
         lineHeightStyle = EvenLineHeight,
     ),
 )

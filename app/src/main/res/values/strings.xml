@@ -45,6 +45,8 @@
     <string name="dashboard_footer_offline">Reconnects automatically</string>
     <string name="dashboard_footer_back">Back closes this screen. Sharing keeps running in the background.</string>
     <string name="dashboard_version" translatable="false">v%1$s</string>
+    <string name="dashboard_update_title">New version available</string>
+    <string name="dashboard_update_text">Update IonTV to keep sharing. Scan the code or open the link.</string>
     <string name="dashboard_unlink_title">Unlink this TV?</string>
     <string name="dashboard_unlink_text">Sharing stops immediately. The TV returns to the sign-in screen.</string>
     <string name="dashboard_keep_linked">Keep linked</string>
